@@ -1,0 +1,399 @@
+﻿import { CalendarDayInfo, DualProgressData } from '../types';
+
+export const AI_HERO_WORLDS = [
+  {
+    worldNum: 0,
+    title: 'WORLD 0 — Engineering Foundation',
+    stack: 'Python + Git + SQL + Software Engineering',
+    tagline: 'Your bedrock as a software engineer first.',
+    icon: '💻',
+    color: 'from-slate-600 to-slate-800',
+  },
+  {
+    worldNum: 1,
+    title: 'WORLD 1 — Data',
+    stack: 'NumPy → Pandas → Visualization → EDA',
+    tagline: 'Get messy data into notebooks and extract truth.',
+    icon: '📊',
+    color: 'from-blue-600 to-indigo-700',
+  },
+  {
+    worldNum: 2,
+    title: 'WORLD 2 — Machine Learning',
+    stack: 'Regression → Classification → Trees → Feature Engineering',
+    tagline: 'Teaching computers to learn from historical patterns.',
+    icon: '🧠',
+    color: 'from-indigo-600 to-purple-700',
+  },
+  {
+    worldNum: 3,
+    title: 'WORLD 3 — ML Engineering',
+    stack: 'Validation → Metrics → Imbalance → Calibration → Thresholds',
+    tagline: 'Judging models critically for high-stakes healthcare risk.',
+    icon: '⚙️',
+    color: 'from-purple-600 to-pink-700',
+  },
+  {
+    worldNum: 4,
+    title: 'WORLD 4 — Deep Learning',
+    stack: 'Neural Networks → PyTorch → Backpropagation → Training Loop',
+    tagline: 'Writing training loops from a blank file.',
+    icon: '🔥',
+    color: 'from-orange-500 to-amber-600',
+  },
+  {
+    worldNum: 5,
+    title: 'WORLD 5 — Transformers',
+    stack: 'Tokens → Embeddings → Attention → Transformers → Hugging Face',
+    tagline: 'Understanding the mechanics of modern NLP architectures.',
+    icon: '🤗',
+    color: 'from-yellow-500 to-amber-600',
+  },
+  {
+    worldNum: 6,
+    title: 'WORLD 6 — LLM Engineering',
+    stack: 'Prompting → Structured Output → APIs → Reliability → Evals',
+    tagline: 'Building reliable software around probabilistic models.',
+    icon: '🤖',
+    color: 'from-emerald-600 to-teal-700',
+  },
+  {
+    worldNum: 7,
+    title: 'WORLD 7 — RAG',
+    stack: 'Chunks → Vector Similarity → Retrieval → Citations → Eval Set',
+    tagline: 'Grounded Q&A over IITM notes with citations.',
+    icon: '📚',
+    color: 'from-cyan-600 to-blue-700',
+  },
+  {
+    worldNum: 8,
+    title: 'WORLD 8 — AI Agents',
+    stack: 'Tools → Function Calling → Think-Act-Observe Loop → Safety',
+    tagline: 'Autonomous tool-using assistants and knowing when NOT to use them.',
+    icon: '🛠️',
+    color: 'from-rose-600 to-red-700',
+  },
+  {
+    worldNum: 9,
+    title: 'WORLD 9 — AI Systems & Deployment',
+    stack: 'FastAPI → Docker → PostgreSQL → Testing → Live Cloud URL',
+    tagline: 'PatientTriage v2 live and usable by strangers.',
+    icon: '🚀',
+    color: 'from-violet-600 to-indigo-800',
+  },
+  {
+    worldNum: 10,
+    title: 'WORLD 10 — Karpathy Mode (Internals)',
+    stack: 'micrograd → Neural Nets from scratch → GPT Architecture',
+    tagline: 'Understanding what is happening underneath the weights.',
+    icon: '🔬',
+    color: 'from-slate-700 to-slate-900',
+  },
+  {
+    worldNum: 11,
+    title: 'WORLD 11 — AI Product Builder & Founder',
+    stack: 'Problem Hunt → Real User → AI Decision → Prototype → Iteration',
+    tagline: 'Solving expensive, repetitive problems and building companies.',
+    icon: '👑',
+    color: 'from-amber-500 via-rose-500 to-purple-600',
+  },
+];
+
+export const AI_HERO_LEVELS = [
+  { level: 0, title: 'Student', icon: '🌱', proof: 'Starting the journey with CS & SWE base', xpRequired: 0 },
+  { level: 1, title: 'Data Explorer', icon: '🐣', proof: 'Clean EDA notebook on real dataset (Week 1 Boss)', xpRequired: 100 },
+  { level: 2, title: 'ML Apprentice', icon: '🧠', proof: 'First ML model from scratch in NumPy (Day 14 Boss)', xpRequired: 250 },
+  { level: 3, title: 'ML Builder', icon: '⚙️', proof: 'PatientTriage Risk Model v1 with calibration (Day 30 Boss)', xpRequired: 500 },
+  { level: 4, title: 'Deep Learning Builder', icon: '🔥', proof: 'PyTorch training loop from blank file + Image Classifier (Day 60)', xpRequired: 800 },
+  { level: 5, title: 'Transformer Explorer', icon: '🤗', proof: 'Hugging Face pretrained experiment & attention intuition (Day 75)', xpRequired: 1200 },
+  { level: 6, title: 'LLM Engineer', icon: '🤖', proof: 'Reliable structured JSON output app with retries (Day 90)', xpRequired: 1700 },
+  { level: 7, title: 'RAG Builder', icon: '📚', proof: 'Freya Notes AI + 30-question retrieval eval set (Day 115)', xpRequired: 2300 },
+  { level: 8, title: 'Agent Builder', icon: '🛠️', proof: 'Tool-using Research Agent with safety fallbacks (Day 135)', xpRequired: 3000 },
+  { level: 9, title: 'AI Systems Engineer', icon: '🚀', proof: 'PatientTriage v2 Live on FastAPI + Docker + live URL (Day 165)', xpRequired: 3800 },
+  { level: 10, title: 'AI Internals Master', icon: '🔬', proof: 'Karpathy micrograd & backprop from blank slate (Day 200)', xpRequired: 4700 },
+  { level: 11, title: 'AI Researcher', icon: '🧪', proof: 'Weekly paper reproduction & empirical experiment (Day 240)', xpRequired: 5700 },
+  { level: 12, title: 'AI Product Builder', icon: '💡', proof: 'Validated real-world customer problem prototype (Day 300)', xpRequired: 6800 },
+  { level: 13, title: 'AI HERO 👑', icon: '👑', proof: 'End-to-end AI product with real users and evaluation', xpRequired: 8000 },
+];
+
+export const INITIAL_DUAL_PROGRESS: DualProgressData = {
+  knowledge: {
+    foundation: 65,
+    ml: 25,
+    dl: 10,
+    llm: 15,
+    rag: 5,
+    agents: 0,
+    deployment: 20,
+  },
+  buildPower: {
+    tinyProjects: 2,     // e.g. NumPy playground, small EDA
+    mlProjects: 1,       // Starting PatientTriage risk model
+    dlProjects: 0,
+    llmApps: 0,
+    ragSystems: 0,
+    agents: 0,
+    deployedSystems: 0,
+    flagshipProgress: 18, // PatientTriage v2 progress
+  }
+};
+
+// Calendar milestone days starting from 25 Sept 2026
+export const CALENDAR_SCHEDULE: CalendarDayInfo[] = [
+  {
+    date: '2026-09-25',
+    dayNumber: 1,
+    title: 'Day 1: What is AI?',
+    world: 'WORLD 1 — Data',
+    concept: 'AI → ML → Deep Learning → Generative AI → LLMs → Agents hierarchy diagram',
+    build: 'Create ai-hero/ repo structure (notes/, experiments/, projects/, README.md)',
+    isBossBattle: false,
+    projectMilestone: 'ai-hero repository kick-off'
+  },
+  {
+    date: '2026-09-26',
+    dayNumber: 2,
+    title: 'Day 2: How Machines Learn',
+    world: 'WORLD 1 — Data',
+    concept: 'Data → Features → Model → Prediction → Loss → Learning loop',
+    build: 'Tiny prediction program (hours studied → exam score)',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-09-27',
+    dayNumber: 3,
+    title: 'Day 3: Python for AI (NumPy)',
+    world: 'WORLD 1 — Data',
+    concept: 'NumPy arrays, shapes, indexing, vector broadcasting and matrix ops',
+    build: 'numpy_playground.ipynb with vector math & stats',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-09-28',
+    dayNumber: 4,
+    title: 'Day 4: Pandas for Data Engineering',
+    world: 'WORLD 1 — Data',
+    concept: 'DataFrame loading, filtering, grouping, handling missing values',
+    build: 'first_eda.ipynb on real Kaggle tabular dataset',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-09-29',
+    dayNumber: 5,
+    title: 'Day 5: Data Visualization & Patterns',
+    world: 'WORLD 1 — Data',
+    concept: 'Distributions, correlations, scatter plots, histograms, outliers',
+    build: 'Dataset Detective report (5 patterns, 2 suspicious values, 1 key insight)',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-09-30',
+    dayNumber: 6,
+    title: 'Day 6: Statistics Intuition',
+    world: 'WORLD 1 — Data',
+    concept: 'Mean, median, variance, standard deviation, probability distributions (StatQuest when stuck)',
+    build: 'Explain: Why can two datasets share the same mean but have totally different distributions?',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-01',
+    dayNumber: 7,
+    title: 'Day 7: WEEK 1 BOSS BATTLE 👑',
+    world: 'WORLD 1 — Data',
+    concept: 'Unassisted end-to-end data pipeline: Load → Clean → Explore → Visualize → Explain',
+    build: 'Week1_AI_Report.md pushed to GitHub with 2 baseline models and metrics!',
+    isBossBattle: true,
+    bossTitle: 'Week 1 Boss Battle: Data Explorer',
+    levelUnlock: 'Level 1: DATA EXPLORER',
+    projectMilestone: 'Project 1 — Dataset Explorer Complete!'
+  },
+  // Days 8 - 14: ML Foundations
+  {
+    date: '2026-10-02',
+    dayNumber: 8,
+    title: 'Day 8: Supervised Learning',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Features, labels, training vs test data split',
+    build: 'Train/test split simulator with zero data leakage',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-03',
+    dayNumber: 9,
+    title: 'Day 9: Linear Regression from Scratch',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Slope, intercept, residual sum of squares',
+    build: 'House price predictor from scratch in NumPy',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-04',
+    dayNumber: 10,
+    title: 'Day 10: Loss Functions',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'MSE, MAE, and cost surfaces',
+    build: 'Loss landscape visualization notebook',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-05',
+    dayNumber: 11,
+    title: 'Day 11: Gradient Descent',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Gradient direction, learning rates, converging to local/global minima',
+    build: 'Manual gradient descent loop in NumPy without sklearn',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-06',
+    dayNumber: 12,
+    title: 'Day 12: Binary Classification',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Regression vs Classification; Spam detection principles',
+    build: 'Spam vs not spam rule & count classifier',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-07',
+    dayNumber: 13,
+    title: 'Day 13: Logistic Regression',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Sigmoid activation, log odds, decision boundaries',
+    build: 'NumPy Logistic Regression benchmarked with scikit-learn',
+    isBossBattle: false,
+  },
+  {
+    date: '2026-10-08',
+    dayNumber: 14,
+    title: 'Day 14: ML BOSS BATTLE 👑',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Complete classification pipeline: Dataset → EDA → Train → Predict → Evaluate',
+    build: 'Classification benchmark with confusion matrix & accuracy metrics',
+    isBossBattle: true,
+    bossTitle: 'Week 2 Boss: ML Apprentice',
+    levelUnlock: 'Level 2: ML APPRENTICE',
+  },
+  // Days 15-21: Trees and Models
+  {
+    date: '2026-10-15',
+    dayNumber: 21,
+    title: 'Day 21: Model Comparison Boss 👑',
+    world: 'WORLD 2 — Machine Learning',
+    concept: 'Logistic Regression vs Decision Tree vs Random Forest trade-offs',
+    build: 'Model comparison notebook explaining variance & inductive bias differences',
+    isBossBattle: true,
+    bossTitle: 'Week 3 Boss: Tree Ensembles'
+  },
+  // Day 30: PatientTriage Risk Model v1
+  {
+    date: '2026-10-24',
+    dayNumber: 30,
+    title: 'Day 30: FIRST SERIOUS PROJECT BOSS 🏥',
+    world: 'WORLD 3 — ML Engineering',
+    concept: 'Precision, Recall, ROC-AUC, Class Imbalance, Calibration, and Threshold Selection for emergency risk',
+    build: 'PatientTriage Risk Model v1 trained on real ED data with abstention logic!',
+    isBossBattle: true,
+    bossTitle: 'Day 30 Flagship Milestone: PatientTriage Risk Model v1',
+    levelUnlock: 'Level 3: ML BUILDER',
+    projectMilestone: 'PatientTriage Risk Model v1 Live in Repo!'
+  },
+  // Day 60: Deep Learning PyTorch Loop
+  {
+    date: '2026-11-23',
+    dayNumber: 60,
+    title: 'Day 60: Deep Learning Boss 🖼️',
+    world: 'WORLD 4 — Deep Learning',
+    concept: 'PyTorch training loop from blank file: Dataset → Model → Loss → Optimizer → Loop → Eval',
+    build: 'Project 2: Image Classifier with PyTorch transfer learning and clean README',
+    isBossBattle: true,
+    bossTitle: 'Day 60 Boss: Deep Learning Builder',
+    levelUnlock: 'Level 4: DEEP LEARNING BUILDER',
+    projectMilestone: 'Project 2 — Deep Learning Mini Project'
+  },
+  // Day 75: Transformers
+  {
+    date: '2026-12-08',
+    dayNumber: 75,
+    title: 'Day 75: Transformer Explorer 🤗',
+    world: 'WORLD 5 — Transformers',
+    concept: 'Self-attention, tokenization, embeddings, Hugging Face pretrained models',
+    build: 'Project 3: Transformer Experiment (Input text → Tokenizer → Model → Output inspection)',
+    isBossBattle: true,
+    bossTitle: 'Transformer Milestone',
+    levelUnlock: 'Level 5: TRANSFORMER EXPLORER',
+    projectMilestone: 'Project 3 — Transformer Experiment'
+  },
+  // Day 90: LLM Engineering
+  {
+    date: '2026-12-23',
+    dayNumber: 90,
+    title: 'Day 90: LLM Engineer Boss 🤖',
+    world: 'WORLD 6 — LLM Engineering',
+    concept: 'Prompting, structured JSON outputs, defensive validation, retry logic, hallucination mitigation',
+    build: 'Project 4: AI Structured Data Extractor (Free text → Validated JSON with retries)',
+    isBossBattle: true,
+    bossTitle: 'Day 90 Boss: LLM Engineer',
+    levelUnlock: 'Level 6: LLM ENGINEER',
+    projectMilestone: 'Project 4 — AI Structured Data Extractor'
+  },
+  // Day 115: RAG Builder
+  {
+    date: '2027-01-17',
+    dayNumber: 115,
+    title: 'Day 115: RAG Builder Boss 📚',
+    world: 'WORLD 7 — RAG',
+    concept: 'Chunking, vector similarity, retrieval, citations, and 30-question evaluation set',
+    build: 'Project 5: Freya Notes AI (Q&A over IITM/college notes with sources & eval table)',
+    isBossBattle: true,
+    bossTitle: 'Day 115 Boss: RAG Builder',
+    levelUnlock: 'Level 7: RAG BUILDER',
+    projectMilestone: 'Project 5 — Freya Notes AI'
+  },
+  // Day 135: Agent Builder
+  {
+    date: '2027-02-06',
+    dayNumber: 135,
+    title: 'Day 135: Agent Builder Boss 🛠️',
+    world: 'WORLD 8 — AI Agents',
+    concept: 'Tool calling, think-act-observe loop, execution limits, and when NOT to use an agent',
+    build: 'Project 6: Research Agent (Multi-tool research assistant with citations and safety)',
+    isBossBattle: true,
+    bossTitle: 'Day 135 Boss: Agent Builder',
+    levelUnlock: 'Level 8: AGENT BUILDER',
+    projectMilestone: 'Project 6 — Research Agent'
+  },
+  // Day 165: Flagship Deployment
+  {
+    date: '2027-03-08',
+    dayNumber: 165,
+    title: 'Day 165: FLAGSHIP DEPLOYED BOSS 🚀',
+    world: 'WORLD 9 — AI Systems & Deployment',
+    concept: 'FastAPI + React + Docker + PostgreSQL + Logging + Safety Rules deployed to live URL',
+    build: 'PatientTriage.ai v2 Live URL (Accessible to strangers & interviewers)',
+    isBossBattle: true,
+    bossTitle: 'Day 165 Grand Boss: End-to-End AI Engineer',
+    levelUnlock: 'Level 9: AI SYSTEMS ENGINEER',
+    projectMilestone: 'PatientTriage.ai v2 Flagship Live!'
+  }
+];
+
+export const INITIAL_DAY_1_MISSION = {
+  dayNumber: 1,
+  dateStr: '2026-09-25',
+  worldName: 'WORLD 1 — Data',
+  concept: 'Understand the hierarchy: AI → ML → Deep Learning → Generative AI → LLMs → Agents',
+  understandPrompt: 'Draw the hierarchy yourself and explain the difference between AI, ML, DL, and GenAI in 2 minutes without notes.',
+  codeTask: 'Set up python environment (Jupyter, numpy, pandas, sklearn) in ai-hero repo.',
+  buildTask: 'Create ai-hero/ repo structure: notes/, experiments/, projects/, and README.md',
+  recordNotes: 'Document what surprised me about GenAI vs traditional ML.',
+  bossQuestion: 'What is the exact distinction between Deep Learning and traditional Machine Learning?',
+  projectMilestone: 'Project 1: ai-hero repository kick-off',
+  completedMissions: {
+    learn: true,
+    understand: false,
+    code: false,
+    build: false,
+    record: false,
+    ship: false,
+  }
+};
