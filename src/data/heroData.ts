@@ -1,4 +1,4 @@
-﻿import { CalendarDayInfo, DualProgressData } from '../types';
+import { CalendarDayInfo, DualProgressData } from '../types';
 
 export const AI_HERO_WORLDS = [
   {
@@ -118,23 +118,23 @@ export const AI_HERO_LEVELS = [
 
 export const INITIAL_DUAL_PROGRESS: DualProgressData = {
   knowledge: {
-    foundation: 65,
-    ml: 25,
-    dl: 10,
-    llm: 15,
-    rag: 5,
+    foundation: 0,
+    ml: 0,
+    dl: 0,
+    llm: 0,
+    rag: 0,
     agents: 0,
-    deployment: 20,
+    deployment: 0,
   },
   buildPower: {
-    tinyProjects: 2,     // e.g. NumPy playground, small EDA
-    mlProjects: 1,       // Starting PatientTriage risk model
+    tinyProjects: 0,
+    mlProjects: 0,
     dlProjects: 0,
     llmApps: 0,
     ragSystems: 0,
     agents: 0,
     deployedSystems: 0,
-    flagshipProgress: 18, // PatientTriage v2 progress
+    flagshipProgress: 0,
   }
 };
 
@@ -389,7 +389,7 @@ export const INITIAL_DAY_1_MISSION = {
   bossQuestion: 'What is the exact distinction between Deep Learning and traditional Machine Learning?',
   projectMilestone: 'Project 1: ai-hero repository kick-off',
   completedMissions: {
-    learn: true,
+    learn: false,
     understand: false,
     code: false,
     build: false,

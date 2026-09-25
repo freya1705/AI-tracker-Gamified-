@@ -22,14 +22,14 @@ import confetti from 'canvas-confetti';
 import { 
   Plus, Search, Compass, Lightbulb, FileText, 
   Sparkles, CheckCircle2, Clock, Filter, BookOpen, 
-  Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown
+  Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown, RotateCcw
 } from 'lucide-react';
 
-const STORAGE_KEY_TASKS = 'freya_quest_tasks_v2';
-const STORAGE_KEY_STATS = 'freya_quest_stats_v2';
-const STORAGE_KEY_DAILY = 'freya_quest_daily_v2';
-const STORAGE_KEY_JOURNAL = 'freya_quest_journal_v2';
-const STORAGE_KEY_SYLLABUS = 'freya_quest_syllabus_v1';
+const STORAGE_KEY_TASKS = 'freya_quest_tasks_v3';
+const STORAGE_KEY_STATS = 'freya_quest_stats_v3';
+const STORAGE_KEY_DAILY = 'freya_quest_daily_v3';
+const STORAGE_KEY_JOURNAL = 'freya_quest_journal_v3';
+const STORAGE_KEY_SYLLABUS = 'freya_quest_syllabus_v2';
 
 export const App: React.FC = () => {
   // Master Daily State with robust schema migration
@@ -73,18 +73,18 @@ export const App: React.FC = () => {
       characterName: 'Freya',
       mood: 'encouraging',
       level: 1,
-      currentXP: 45,
+      currentXP: 0,
       nextLevelXP: 100,
-      totalXPEarned: 45,
-      streakDays: 3,
+      totalXPEarned: 0,
+      streakDays: 1,
       lastActiveDate: new Date().toISOString().split('T')[0],
-      tasksCompletedToday: 1,
+      tasksCompletedToday: 0,
       equippedAccessoryId: 'acc-yellow-bow',
       unlockedAccessories: ['acc-yellow-bow'],
       soundEnabled: true,
       dailyMode: 'normal',
       careerTier: 'student',
-      heroLevelTitle: 'Data Explorer',
+      heroLevelTitle: 'Student (Day 1)',
       currentDayNumber: 1,
       dualProgress: INITIAL_DUAL_PROGRESS,
     };
@@ -128,7 +128,7 @@ export const App: React.FC = () => {
         if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
-    return ['ai-0-1', 'ai-0-7', 'swe-dsa-1'];
+    return [];
   });
 
   // Filter & Search states for quests tab
@@ -147,6 +147,7 @@ export const App: React.FC = () => {
   const [isPhotoOpen, setIsPhotoOpen] = useState(false);
   const [isSyllabusPickerOpen, setIsSyllabusPickerOpen] = useState(false);
   const [syllabusPickerMode, setSyllabusPickerMode] = useState<'all' | 'ai' | 'swe'>('all');
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Persistence
   useEffect(() => {
@@ -262,6 +263,41 @@ export const App: React.FC = () => {
   const handleDeleteTask = (id: string) => {
     sounds.playClick();
     setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const handleConfirmReset = () => {
+    try {
+      localStorage.clear();
+    } catch {}
+
+    setDaily(DEFAULT_MASTER_DAILY);
+    setTasks(INITIAL_TASKS);
+    setStats({
+      characterName: 'Freya',
+      mood: 'encouraging',
+      level: 1,
+      currentXP: 0,
+      nextLevelXP: 100,
+      totalXPEarned: 0,
+      streakDays: 1,
+      lastActiveDate: new Date().toISOString().split('T')[0],
+      tasksCompletedToday: 0,
+      equippedAccessoryId: 'acc-yellow-bow',
+      unlockedAccessories: ['acc-yellow-bow'],
+      soundEnabled: true,
+      dailyMode: 'normal',
+      careerTier: 'student',
+      heroLevelTitle: 'Student (Day 1)',
+      currentDayNumber: 1,
+      dualProgress: INITIAL_DUAL_PROGRESS,
+    });
+    setCompletedSyllabusTopicIds([]);
+    setJournalEntries(INITIAL_JOURNAL_ENTRIES);
+    setIsResetConfirmOpen(false);
+
+    sounds.playLevelUp();
+    confetti({ particleCount: 90, spread: 75, origin: { y: 0.5 } });
+    handleTriggerReaction("🌱 Clean slate! Starting Day 1 right now from zero. Let's make it count, Freya!", 'happy');
   };
 
   const handleAddJournalEntry = (entry: Omit<AiJournalEntry, 'id' | 'date'>) => {
@@ -497,6 +533,19 @@ export const App: React.FC = () => {
             >
               <FileText className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden xl:inline">Original Note</span>
+            </button>
+
+            {/* Start from Zero Button */}
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setIsResetConfirmOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Reset everything from today and start fresh from zero"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+              <span className="hidden sm:inline">Start from Zero</span>
             </button>
 
             {/* Add Task Button */}
@@ -850,6 +899,57 @@ export const App: React.FC = () => {
         filterMode={syllabusPickerMode}
         onSelectTopic={handleLoadSyllabusTopicIntoDaily}
       />
+
+      {/* Reset from Zero Confirmation Modal */}
+      {isResetConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 text-center animate-scale-up">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shadow-inner">
+              🌱
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900 font-display">
+                Start Fresh From Zero?
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                This will refresh your dashboard for <strong>today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})</strong> starting from pure zero:
+              </p>
+              <ul className="text-xs text-slate-600 text-left mt-3 bg-slate-50 p-3.5 rounded-2xl space-y-2 border border-slate-200">
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-500 font-bold">✓</span>
+                  <span>All daily tasks reset to unchecked for today</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-500 font-bold">✓</span>
+                  <span>Morning Foundation (0/7) & Core Engineering clean</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-500 font-bold">✓</span>
+                  <span>XP reset to 0 / 100 XP (Level 1, Day 1)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-500 font-bold">✓</span>
+                  <span>Syllabus mastery tracking reset to 0 completed topics</span>
+                </li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setIsResetConfirmOpen(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReset}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold text-xs shadow-md shadow-rose-200 hover:from-rose-600 hover:to-red-700 transition cursor-pointer active:scale-95"
+              >
+                Yes, Start from Zero 🌱
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
