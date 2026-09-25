@@ -17,6 +17,7 @@ import { RoadmapModal } from './components/RoadmapModal';
 import { FounderRoadmapModal } from './components/FounderRoadmapModal';
 import { ProblemOfTheWeekModal } from './components/ProblemOfTheWeekModal';
 import { RoutinePhotoModal } from './components/RoutinePhotoModal';
+import { ResourceVaultDrawer } from './components/ResourceVaultDrawer';
 import { sounds } from './utils/audio';
 import confetti from 'canvas-confetti';
 import { 
@@ -148,6 +149,8 @@ export const App: React.FC = () => {
   const [isSyllabusPickerOpen, setIsSyllabusPickerOpen] = useState(false);
   const [syllabusPickerMode, setSyllabusPickerMode] = useState<'all' | 'ai' | 'swe'>('all');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isResourceDrawerOpen, setIsResourceDrawerOpen] = useState(false);
+  const [resourceDrawerFilter, setResourceDrawerFilter] = useState('all');
 
   // Persistence
   useEffect(() => {
@@ -509,6 +512,20 @@ export const App: React.FC = () => {
               <span className="hidden lg:inline">AI Guide</span>
             </button>
 
+            {/* Free Resource Vault Button */}
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setResourceDrawerFilter('all');
+                setIsResourceDrawerOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Open Free Resource Vault Side Panel"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+              <span className="inline">Free Resources 📚</span>
+            </button>
+
             {/* Problem Worksheet */}
             <button
               onClick={() => {
@@ -716,6 +733,10 @@ export const App: React.FC = () => {
             onToggleTopic={handleToggleSyllabusTopic}
             onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
             characterName={stats.characterName}
+            onOpenResources={() => {
+              setResourceDrawerFilter('all');
+              setIsResourceDrawerOpen(true);
+            }}
           />
         )}
 
@@ -950,6 +971,30 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Floating Side Tab for Instant Resource Access */}
+      <button
+        onClick={() => {
+          sounds.playClick();
+          setResourceDrawerFilter('all');
+          setIsResourceDrawerOpen(true);
+        }}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-b from-indigo-700 via-purple-700 to-indigo-900 text-white font-bold text-xs py-3.5 px-2 rounded-l-2xl shadow-2xl hover:px-2.5 transition-all flex flex-col items-center gap-2 group cursor-pointer border-t border-b border-l border-white/30 active:scale-95"
+        title="Open Free Resource Vault Side Panel"
+      >
+        <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+        <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] font-black uppercase py-0.5">
+          Resources
+        </span>
+        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+      </button>
+
+      {/* Free Resource Vault Side Drawer */}
+      <ResourceVaultDrawer
+        isOpen={isResourceDrawerOpen}
+        onClose={() => setIsResourceDrawerOpen(false)}
+        initialFilter={resourceDrawerFilter}
+      />
 
     </div>
   );

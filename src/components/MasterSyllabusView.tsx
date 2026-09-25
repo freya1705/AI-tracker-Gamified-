@@ -14,6 +14,7 @@ interface MasterSyllabusViewProps {
   onToggleTopic: (topicId: string, topicTitle: string, isChecked: boolean) => void;
   onLoadTopicIntoDaily: (topic: SyllabusTopic) => void;
   characterName: string;
+  onOpenResources?: () => void;
 }
 
 export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
@@ -21,6 +22,7 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
   onToggleTopic,
   onLoadTopicIntoDaily,
   characterName,
+  onOpenResources,
 }) => {
   const [activeTab, setActiveTab] = useState<'ai' | 'swe' | 'timeline' | 'all'>('ai');
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,8 +133,22 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
             </div>
           </div>
 
-          {/* Quick Action: Pick Daily One Topic */}
+          {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            {onOpenResources && (
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  onOpenResources();
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 shadow-sm transition-all cursor-pointer active:scale-95"
+                title="Open Free Resource Vault Side Panel"
+              >
+                <BookOpen className="w-4 h-4 text-amber-300" />
+                <span>Free Resources 📚</span>
+              </button>
+            )}
+            
             <button
               onClick={handlePickRandomNext}
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer active:scale-95"
