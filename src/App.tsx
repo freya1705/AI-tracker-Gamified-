@@ -4,6 +4,10 @@ import { ACCESSORIES, INITIAL_TASKS, DEFAULT_MASTER_DAILY, INITIAL_JOURNAL_ENTRI
 import { INITIAL_DUAL_PROGRESS } from './data/heroData';
 import { CompanionAvatar } from './components/CompanionAvatar';
 import { FreyaCharacter } from './components/FreyaCompanion/FreyaCharacter';
+import { AppHeader } from './components/Header/AppHeader';
+import { QuickAccessDrawer } from './components/QuickAccess/QuickAccessDrawer';
+import { GlobalCommandPalette } from './components/CommandPalette/GlobalCommandPalette';
+import { MasterUniverseView } from './components/Master/MasterUniverseView';
 import { MasterDailyView } from './components/MasterDailyView';
 import { MasterSyllabusView } from './components/MasterSyllabusView';
 import { SyllabusTopicPickerModal } from './components/SyllabusTopicPickerModal';
@@ -27,7 +31,7 @@ import {
   Plus, Search, Compass, Lightbulb, FileText, 
   Sparkles, CheckCircle2, Clock, Filter, BookOpen, 
   Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown, RotateCcw,
-  CheckSquare
+  CheckSquare, Brain
 } from 'lucide-react';
 
 const STORAGE_KEY_TASKS = 'freya_quest_tasks_v3';
@@ -122,8 +126,33 @@ export const App: React.FC = () => {
     return INITIAL_JOURNAL_ENTRIES;
   });
 
-  // Active top-level view: 'daily_system' | 'syllabus' | 'calendar' | 'hero_worlds' | 'all_quests'
-  const [activeMainTab, setActiveMainTab] = useState<'daily_system' | 'syllabus' | 'calendar' | 'hero_worlds' | 'all_quests'>('daily_system');
+  // Active top-level world: 'daily_system' (Today) | 'master' (Master Knowledge Map)
+  const [activeWorld, setActiveWorld] = useState<'daily_system' | 'master'>('daily_system');
+  const [masterSubTab, setMasterSubTab] = useState<string>('ai');
+
+  // Quick Access & Global Command Palette states
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isQuickAccessOpen, setIsQuickAccessOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleNavigateToWorld = (world: 'daily_system' | 'master', subTab?: string) => {
+    sounds.playClick();
+    setActiveWorld(world);
+    if (subTab) {
+      setMasterSubTab(subTab);
+    }
+  };
 
   // Master Syllabus completed topics
   const [completedSyllabusTopicIds, setCompletedSyllabusTopicIds] = useState<string[]>(() => {
@@ -434,7 +463,7 @@ export const App: React.FC = () => {
         milestone: dayInfo.projectMilestone || prev.project.milestone
       }
     }));
-    setActiveMainTab('daily_system');
+    setActiveWorld('daily_system');
     handleTriggerReaction(`Loaded Day ${dayInfo.dayNumber}: "${dayInfo.title}"! Let's conquer today's AI Hero missions! 🚀`, 'excited', 30);
   };
 
@@ -477,7 +506,7 @@ export const App: React.FC = () => {
           }
         }
       }));
-      setActiveMainTab('daily_system');
+      setActiveWorld('daily_system');
       handleTriggerReaction(`Loaded "${topic.title}" from AI Syllabus! Let's learn, understand, code, and ship today! 🚀`, 'excited', 25);
     } else {
       setDaily(prev => ({
@@ -497,7 +526,7 @@ export const App: React.FC = () => {
           commitCode: false,
         }
       }));
-      setActiveMainTab('daily_system');
+      setActiveWorld('daily_system');
       handleTriggerReaction(`Loaded "${topic.title}" into DSA / SWE Stack! 4 LeetCodes + Dry Runs mode! ⚡`, 'proud', 25);
     }
   };
@@ -505,260 +534,71 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#faf7f5] text-slate-800 flex flex-col">
       
-      {/* Sticky App Header */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3 transition-all">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          
-          {/* Logo & Identity */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-400 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-              <Sparkles className="w-5 h-5 fill-white/80" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 font-display">
-                  Freya Quest
-                </h1>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200">
-                  AI-Powered Engineer
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
-                Master Daily System • SWE First + AI Specialization
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Hub Tools */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            
-            {/* 2026-2032+ Founder Roadmap Button */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsFounderRoadmapOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Freya → AI Builder → AI Founder Roadmap"
-            >
-              <Trophy className="w-3.5 h-3.5 text-purple-600" />
-              <span className="hidden md:inline">Founder Roadmap</span>
-            </button>
-
-            {/* AI Guide Roadmap */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsRoadmapOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Freya's 7-Step AI Roadmap & Verdicts"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">AI Guide</span>
-            </button>
-
-            {/* Master AI Checklist (0-29) Button */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsChecklistDrawerOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs rounded-xl border border-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Exact 30-Section AI Syllabus Checklist (Sections 0 to 29)"
-            >
-              <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="inline">Checklist (0–29) 📋</span>
-              <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-emerald-200/90 text-emerald-950">
-                {verbatimCheckedIds.length}/{TOTAL_VERBATIM_ITEMS}
-              </span>
-            </button>
-
-            {/* Free Resource Vault Button */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setSelectedStageForVault(undefined);
-                setResourceDrawerFilter('all');
-                setIsResourceDrawerOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Free Resource Vault Side Panel"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-              <span className="inline">Free Resources 📚</span>
-            </button>
-
-            {/* Problem Worksheet */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsProblemOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl border border-amber-200 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Real-World Problem of the Week Worksheet"
-            >
-              <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden lg:inline">Problem Sheet</span>
-            </button>
-
-            {/* Original Note */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsPhotoOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="View original handwritten schedule note"
-            >
-              <FileText className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden xl:inline">Original Note</span>
-            </button>
-
-            {/* Start from Zero Button */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsResetConfirmOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Reset everything from today and start fresh from zero"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-              <span className="hidden sm:inline">Start from Zero</span>
-            </button>
-
-            {/* Add Task Button */}
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setIsTaskModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all cursor-pointer active:scale-95"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Add Quest</span>
-            </button>
-
-          </div>
-
-        </div>
-      </header>
+      {/* 1. Unified Clean App Header */}
+      <AppHeader
+        activeTab={activeWorld}
+        onSelectTab={(world) => {
+          sounds.playClick();
+          setActiveWorld(world);
+        }}
+        onOpenSearch={() => setIsCommandPaletteOpen(true)}
+        onOpenQuickAccess={() => setIsQuickAccessOpen(true)}
+        stats={stats}
+      />
 
       {/* Main App Container */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
         
-        {/* 1. Companion Avatar Showcase (With Career Ladder & 4 Worlds) */}
-        {/* 1. Companion Avatar Showcase (With Career Ladder & 4 Worlds) */}
-        <CompanionAvatar
-          stats={stats}
-          daily={daily}
-          onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-          onOpenWardrobe={() => {
-            sounds.playClick();
-            setIsWardrobeOpen(true);
-          }}
-          onOpenTimer={() => {
-            sounds.playClick();
-            setIsTimerOpen(true);
-          }}
-          onOpenFounderRoadmap={() => {
-            sounds.playClick();
-            setIsFounderRoadmapOpen(true);
-          }}
-          speechOverride={speechOverride}
-          floatingXP={floatingXP}
-        />
-
-        {/* 2. Top-level View Switcher Tabs: Today, Knowledge, Adventure Map, Hero Worlds, Quests */}
-        <div className="w-full max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setActiveMainTab('daily_system');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeMainTab === 'daily_system'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 text-emerald-400" />
-              <span>🌱 Today</span>
-            </button>
-
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setActiveMainTab('syllabus');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeMainTab === 'syllabus'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>🧠 Knowledge</span>
-            </button>
-
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setActiveMainTab('calendar');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeMainTab === 'calendar'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <Calendar className="w-4 h-4 text-amber-500" />
-              <span>🗺 Adventure Map</span>
-            </button>
-
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setActiveMainTab('hero_worlds');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeMainTab === 'hero_worlds'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <Crown className="w-4 h-4 text-purple-400" />
-              <span>👑 Hero Worlds</span>
-            </button>
-
-            <button
-              onClick={() => {
-                sounds.playClick();
-                setActiveMainTab('all_quests');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeMainTab === 'all_quests'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              <ListTodo className="w-4 h-4 text-sky-400" />
-              <span>🏆 Quests ({tasks.length})</span>
-            </button>
-          </div>
-
-          <span className="text-xs text-slate-500 font-medium hidden md:inline">
-            {activeMainTab === 'daily_system' ? "Today's World • Missions A–F" : activeMainTab === 'syllabus' ? 'Knowledge World • 307 Topics • 26 AI Modules + 9 SWE Pillars' : activeMainTab === 'calendar' ? 'Adventure Map • Sept 2026 → Mar 2027 Schedule' : activeMainTab === 'hero_worlds' ? 'Hero Worlds • 12 Boss Battles & Dual Progress' : 'Quest Board • Custom Quests & Catalog'}
-          </span>
-        </div>
-
         {/* ========================================================= */}
-        {/* VIEW 1: MASTER DAILY SYSTEM */}
+        {/* WORLD 1: 🌱 TODAY ("What do I do?") */}
         {/* ========================================================= */}
-        {activeMainTab === 'daily_system' && (
-          <>
+        {activeWorld === 'daily_system' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Top Greeting & Action Anchor */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-200">
+                  Today's Mission Ground
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-display mt-0.5">
+                  ✨ Good Morning, {stats.characterName}
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleNavigateToWorld('master', 'ai')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition cursor-pointer active:scale-95"
+                  title="Explore Master Knowledge Universe (17 Stages • 9 SWE Pillars)"
+                >
+                  <Brain className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Master Knowledge Map →</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Recomposed Companion Module */}
+            <CompanionAvatar
+              stats={stats}
+              daily={daily}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+              onOpenWardrobe={() => {
+                sounds.playClick();
+                setIsWardrobeOpen(true);
+              }}
+              onOpenTimer={() => {
+                sounds.playClick();
+                setIsTimerOpen(true);
+              }}
+              onOpenFounderRoadmap={() => {
+                sounds.playClick();
+                setIsFounderRoadmapOpen(true);
+              }}
+              speechOverride={speechOverride}
+              floatingXP={floatingXP}
+              size="md"
+            />
+
             {/* Daily Mode Selector */}
             <DailyModeSelector
               currentMode={stats.dailyMode}
@@ -774,7 +614,7 @@ export const App: React.FC = () => {
               }}
             />
 
-            {/* The Master Daily 6 Pillars Component */}
+            {/* Today's World: Hero Quest Book & Mini Worlds */}
             <MasterDailyView
               daily={daily}
               onUpdateDaily={setDaily}
@@ -792,196 +632,115 @@ export const App: React.FC = () => {
                 setIsResourceDrawerOpen(true);
               }}
             />
-          </>
-        )}
-
-        {/* ========================================================= */}
-        {/* VIEW: MASTER SYLLABUS (26 AI MODULES + 9 SWE PILLARS) */}
-        {/* ========================================================= */}
-        {activeMainTab === 'syllabus' && (
-          <div className="space-y-4">
-            <CompanionAvatar
-              stats={stats}
-              daily={daily}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-              onOpenWardrobe={() => setIsWardrobeOpen(true)}
-              onOpenTimer={() => setIsTimerOpen(true)}
-              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
-              compact
-              size="sm"
-              characterState="focus"
-              speechOverride="Knowledge World: 26 AI Modules + 9 SWE Pillars. Pick 1 concept to conquer today without pressure!"
-            />
-            <MasterSyllabusView
-              completedTopicIds={completedSyllabusTopicIds}
-              onToggleTopic={handleToggleSyllabusTopic}
-              onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
-              characterName={stats.characterName}
-              onOpenResources={(stageId) => {
-                sounds.playClick();
-                setSelectedStageForVault(stageId);
-                setResourceDrawerFilter('all');
-                setIsResourceDrawerOpen(true);
-              }}
-            />
           </div>
         )}
 
         {/* ========================================================= */}
-        {/* VIEW 2: CALENDAR & MILESTONES */}
+        {/* WORLD 2: 🧠 MASTER ("Where am I going?") */}
         {/* ========================================================= */}
-        {activeMainTab === 'calendar' && (
-          <div className="space-y-4">
-            <CompanionAvatar
-              stats={stats}
-              daily={daily}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-              onOpenWardrobe={() => setIsWardrobeOpen(true)}
-              onOpenTimer={() => setIsTimerOpen(true)}
-              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
-              compact
-              size="sm"
-              characterState="streak"
-              speechOverride={`Adventure Map: Day ${daily.dayNumber} of our 180-day master journey! Every daily commit moves us toward AI Founder.`}
-            />
-            <CalendarView
-              currentDayNumber={daily.dayNumber}
-              onSelectDayForSystem={handleSelectDayForSystem}
-            />
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* VIEW 3: AI HERO WORLDS & DUAL PROGRESS */}
-        {/* ========================================================= */}
-        {activeMainTab === 'hero_worlds' && (
-          <div className="space-y-4">
-            <CompanionAvatar
-              stats={stats}
-              daily={daily}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-              onOpenWardrobe={() => setIsWardrobeOpen(true)}
-              onOpenTimer={() => setIsTimerOpen(true)}
-              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
-              compact
-              size="sm"
-              characterState="levelUp"
-              speechOverride="Hero Worlds: Conquer the 12 Boss Battles to unlock Dual Mastery (Knowledge + Build Power)!"
-            />
-            <AiHeroWorldsView
-              stats={stats}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-            />
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* VIEW 2: ALL QUESTS & BACKLOG */}
-        {/* ========================================================= */}
-        {activeMainTab === 'all_quests' && (
-          <div className="w-full max-w-4xl mx-auto space-y-4">
-            <CompanionAvatar
-              stats={stats}
-              daily={daily}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-              onOpenWardrobe={() => setIsWardrobeOpen(true)}
-              onOpenTimer={() => setIsTimerOpen(true)}
-              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
-              compact
-              size="sm"
-              characterState="idle"
-              speechOverride="Quest Board: Custom challenges & backlog! Pick a quest and start a 20-minute focus sprint to conquer it."
-            />
-            
-            {/* Search & Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 font-display">
-                  Quest Catalog
-                </h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  {activeCount} active quests remaining.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1 sm:w-56">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="text"
-                    placeholder="Search quest or topic..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-
-                <select
-                  value={filterPriority}
-                  onChange={(e) => setFilterPriority(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                >
-                  <option value="all">All Priorities</option>
-                  <option value="high">🔴 High Only</option>
-                  <option value="medium">🟡 Medium</option>
-                  <option value="low">🟢 Low</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    sounds.playClick();
-                    setActiveCategory(c.id);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeCategory === c.id
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <span>{c.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    activeCategory === c.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-500'
-                  }`}>
-                    {c.count}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Task Cards */}
-            <div className="space-y-3 mb-12">
-              {filteredTasks.length === 0 ? (
-                <div className="p-8 text-center rounded-3xl bg-white border border-slate-200/80 shadow-xs">
-                  <div className="text-3xl mb-2">🎉</div>
-                  <h4 className="text-base font-bold text-slate-800 font-display">
-                    No quests found here!
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                    All clear or no matches for your search. Add a new quest or adjust filters!
-                  </p>
-                </div>
-              ) : (
-                filteredTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onToggleComplete={handleToggleComplete}
-                    onDeleteTask={handleDeleteTask}
-                  />
-                ))
-              )}
-            </div>
-
-          </div>
+        {activeWorld === 'master' && (
+          <MasterUniverseView
+            stats={stats}
+            daily={daily}
+            tasks={tasks}
+            completedTopicIds={completedSyllabusTopicIds}
+            verbatimCheckedIds={verbatimCheckedIds}
+            journalEntries={journalEntries}
+            onToggleTopic={handleToggleSyllabusTopic}
+            onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
+            onToggleTaskComplete={handleToggleComplete}
+            onDeleteTask={handleDeleteTask}
+            onToggleVerbatimItem={handleToggleVerbatimItem}
+            onResetVerbatimChecklist={handleResetVerbatimChecklist}
+            onSelectDayForSystem={handleSelectDayForSystem}
+            onOpenTopicPicker={(mode) => {
+              sounds.playClick();
+              setSyllabusPickerMode(mode);
+              setIsSyllabusPickerOpen(true);
+            }}
+            onOpenResources={(stageId) => {
+              sounds.playClick();
+              setSelectedStageForVault(stageId);
+              setResourceDrawerFilter('all');
+              setIsResourceDrawerOpen(true);
+            }}
+            onOpenFounderRoadmap={() => {
+              sounds.playClick();
+              setIsFounderRoadmapOpen(true);
+            }}
+            onOpenRoadmap={() => {
+              sounds.playClick();
+              setIsRoadmapOpen(true);
+            }}
+            onOpenProblemSheet={() => {
+              sounds.playClick();
+              setIsProblemOpen(true);
+            }}
+            onOpenOriginalNote={() => {
+              sounds.playClick();
+              setIsPhotoOpen(true);
+            }}
+            onOpenAddTask={() => {
+              sounds.playClick();
+              setIsTaskModalOpen(true);
+            }}
+            onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+            initialSubTab={masterSubTab}
+          />
         )}
 
       </main>
+
+      {/* Quick Access Drawer */}
+      <QuickAccessDrawer
+        isOpen={isQuickAccessOpen}
+        onClose={() => setIsQuickAccessOpen(false)}
+        onOpenChecklist={() => setIsChecklistDrawerOpen(true)}
+        onOpenResources={() => {
+          setSelectedStageForVault(undefined);
+          setResourceDrawerFilter('all');
+          setIsResourceDrawerOpen(true);
+        }}
+        onOpenProblemSheet={() => setIsProblemOpen(true)}
+        onOpenOriginalNote={() => setIsPhotoOpen(true)}
+        onOpenRoadmap={() => setIsRoadmapOpen(true)}
+        onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+        onOpenCalendar={() => handleNavigateToWorld('master', 'calendar')}
+        onOpenAddTask={() => setIsTaskModalOpen(true)}
+        onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
+        onOpenTimer={() => setIsTimerOpen(true)}
+        onOpenWardrobe={() => setIsWardrobeOpen(true)}
+        soundEnabled={stats.soundEnabled}
+        onToggleSound={() => {
+          const next = !stats.soundEnabled;
+          sounds.enabled = next;
+          setStats(prev => ({ ...prev, soundEnabled: next }));
+        }}
+        totalVerbatimChecked={verbatimCheckedIds.length}
+        totalVerbatimCount={TOTAL_VERBATIM_ITEMS}
+      />
+
+      {/* Global Command Palette (Ctrl+K) */}
+      <GlobalCommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigateToTab={handleNavigateToWorld}
+        onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
+        onOpenChecklist={() => setIsChecklistDrawerOpen(true)}
+        onOpenResources={(stageId) => {
+          setSelectedStageForVault(stageId);
+          setIsResourceDrawerOpen(true);
+        }}
+        onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+        onOpenRoadmap={() => setIsRoadmapOpen(true)}
+        onOpenProblemSheet={() => setIsProblemOpen(true)}
+        onOpenOriginalNote={() => setIsPhotoOpen(true)}
+        onOpenTimer={() => setIsTimerOpen(true)}
+        onOpenWardrobe={() => setIsWardrobeOpen(true)}
+        onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
+        onOpenAddTask={() => setIsTaskModalOpen(true)}
+        tasks={tasks}
+      />
 
       {/* Footer Encouragement Banner */}
       <footer className="mt-auto border-t border-slate-200 bg-white/70 backdrop-blur-sm py-4 px-6 text-center text-xs text-slate-500">

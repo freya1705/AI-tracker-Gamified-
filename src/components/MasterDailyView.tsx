@@ -28,9 +28,9 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
   onOpenTopicPicker,
   onOpenResources,
 }) => {
-  const [activeWorldTab, setActiveWorldTab] = useState<'all' | 'dsa' | 'ai' | 'life'>('all');
-  const [isFoundationExpanded, setIsFoundationExpanded] = useState<boolean>(true);
-  const [isProjectExpanded, setIsProjectExpanded] = useState<boolean>(true);
+  const [expandedWorld, setExpandedWorld] = useState<'none' | 'dsa' | 'ai' | 'life' | 'all'>('ai');
+  const [isFoundationExpanded, setIsFoundationExpanded] = useState<boolean>(false);
+  const [isProjectExpanded, setIsProjectExpanded] = useState<boolean>(false);
   const [isEveningExpanded, setIsEveningExpanded] = useState<boolean>(false);
 
   const morning = daily?.morning || {
@@ -336,7 +336,10 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
             )}
             <button
               type="button"
-              onClick={() => setActiveWorldTab('ai')}
+              onClick={() => {
+                sounds.playClick();
+                setExpandedWorld('ai');
+              }}
               className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs hover:from-amber-300 hover:to-amber-400 transition-all cursor-pointer shadow-md flex items-center gap-1 ml-auto active:scale-95"
             >
               <span>Continue Quest</span>
@@ -413,52 +416,103 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
       {/* ========================================================= */}
       <div className="space-y-4">
         
-        {/* World Selectors Ribbon */}
-        <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-black text-slate-800 font-display">
-              Playful Mini Worlds:
-            </h3>
+        {/* Tri-World Summary Glance Cards: SUMMARY -> EXPAND -> DETAILS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          
+          {/* 🧠 DSA World Summary Card */}
+          <div 
+            onClick={() => {
+              sounds.playClick();
+              setExpandedWorld(prev => prev === 'dsa' ? 'none' : 'dsa');
+            }}
+            className={`p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+              expandedWorld === 'dsa' || expandedWorld === 'all'
+                ? 'bg-blue-50/90 border-blue-400 shadow-md ring-2 ring-blue-400/20'
+                : 'bg-white border-blue-200/80 hover:border-blue-300 shadow-xs'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧠</span>
+                <span className="text-xs font-black text-slate-800 font-display">DSA World</span>
+              </div>
+              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                {dsaDoneCount} / 10
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-600 font-semibold">
+              Learn → Solve → Commit
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-blue-100/80 text-[10px] font-bold text-blue-700">
+              <span>{expandedWorld === 'dsa' || expandedWorld === 'all' ? 'Hide Stack ▲' : 'Open Stack ▼'}</span>
+              <span className="text-slate-400 truncate max-w-[110px]">{dsa.topic || '4 LeetCode'}</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-            <button
-              onClick={() => { sounds.playClick(); setActiveWorldTab('all'); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeWorldTab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              All Worlds
-            </button>
-            <button
-              onClick={() => { sounds.playClick(); setActiveWorldTab('dsa'); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeWorldTab === 'dsa' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🧠 DSA ({dsaDoneCount}/10)
-            </button>
-            <button
-              onClick={() => { sounds.playClick(); setActiveWorldTab('ai'); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeWorldTab === 'ai' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🤖 AI ({aiMissionsDoneCount}/6)
-            </button>
-            <button
-              onClick={() => { sounds.playClick(); setActiveWorldTab('life'); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeWorldTab === 'life' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🌱 Life ({life.completed.length})
-            </button>
+          {/* 🤖 AI World Summary Card */}
+          <div 
+            onClick={() => {
+              sounds.playClick();
+              setExpandedWorld(prev => prev === 'ai' ? 'none' : 'ai');
+            }}
+            className={`p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+              expandedWorld === 'ai' || expandedWorld === 'all'
+                ? 'bg-purple-50/90 border-purple-400 shadow-md ring-2 ring-purple-400/20'
+                : 'bg-white border-purple-200/80 hover:border-purple-300 shadow-xs'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🤖</span>
+                <span className="text-xs font-black text-slate-800 font-display">AI World</span>
+              </div>
+              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                {aiMissionsDoneCount} / 6
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-600 font-semibold">
+              Learn → Code → Build
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-purple-100/80 text-[10px] font-bold text-purple-700">
+              <span>{expandedWorld === 'ai' || expandedWorld === 'all' ? 'Hide Missions ▲' : 'Open Missions ▼'}</span>
+              <span className="text-slate-400 truncate max-w-[110px]">{aiMission.concept || 'Missions A–F'}</span>
+            </div>
           </div>
+
+          {/* 🌱 Life World Summary Card */}
+          <div 
+            onClick={() => {
+              sounds.playClick();
+              setExpandedWorld(prev => prev === 'life' ? 'none' : 'life');
+            }}
+            className={`p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+              expandedWorld === 'life' || expandedWorld === 'all'
+                ? 'bg-emerald-50/90 border-emerald-400 shadow-md ring-2 ring-emerald-400/20'
+                : 'bg-white border-emerald-200/80 hover:border-emerald-300 shadow-xs'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🌱</span>
+                <span className="text-xs font-black text-slate-800 font-display">Life World</span>
+              </div>
+              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                {life.completed.length} / {life.selected.length || 3}
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-600 font-semibold">
+              Foundation + Balance
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-emerald-100/80 text-[10px] font-bold text-emerald-700">
+              <span>{expandedWorld === 'life' || expandedWorld === 'all' ? 'Hide Balance ▲' : 'Open Balance ▼'}</span>
+              <span className="text-slate-400">Recharge</span>
+            </div>
+          </div>
+
         </div>
 
         {/* 1. 🧠 DSA WORLD */}
-        {(activeWorldTab === 'all' || activeWorldTab === 'dsa') && (
+        {(expandedWorld === 'all' || expandedWorld === 'dsa') && (
           <section className="bg-white/95 rounded-3xl p-5 sm:p-6 border border-blue-200/90 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-100">
               <div className="flex items-center gap-2.5">
@@ -574,7 +628,7 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
         )}
 
         {/* 2. 🤖 AI WORLD */}
-        {(activeWorldTab === 'all' || activeWorldTab === 'ai') && (
+        {(expandedWorld === 'all' || expandedWorld === 'ai') && (
           <DailyAiHeroCard
             mission={aiMission}
             onUpdateMission={(updater) => onUpdateDaily(prev => ({ ...prev, aiMission: updater(prev.aiMission || aiMission) }))}
@@ -585,7 +639,7 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
         )}
 
         {/* 3. 🌱 LIFE WORLD */}
-        {(activeWorldTab === 'all' || activeWorldTab === 'life') && (
+        {(expandedWorld === 'all' || expandedWorld === 'life') && (
           <section className="bg-white/95 rounded-3xl p-5 sm:p-6 border border-emerald-200/90 shadow-xs">
             <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-emerald-100">
               <div className="flex items-center gap-2.5">
@@ -672,40 +726,43 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
       </div>
 
       {/* ========================================================= */}
-      {/* 🌅 1. MORNING FOUNDATION (COLLAPSIBLE & MANDATORY) */}
+      {/* 🌅 1. MORNING FOUNDATION (COMPACT & COLLAPSIBLE) */}
       {/* ========================================================= */}
-      <section className="bg-white/95 rounded-3xl p-5 sm:p-6 border border-amber-200/80 shadow-xs">
+      <section className="bg-white/95 rounded-3xl p-4 sm:p-5 border border-amber-200/80 shadow-xs">
         <div 
           onClick={() => { sounds.playClick(); setIsFoundationExpanded(!isFoundationExpanded); }}
           className="flex items-center justify-between gap-2 cursor-pointer select-none"
         >
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-lg shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-base shadow-xs shrink-0">
               🌅
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-800 font-display">
-                  Morning Foundation — Mandatory
+                <h3 className="text-sm font-black text-slate-800 font-display">
+                  🌱 Morning Foundation
                 </h3>
+                <span className="text-xs font-extrabold text-amber-800">
+                  {morningDoneCount}/7 complete
+                </span>
                 {morningDoneCount === 7 && (
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    Set ✨
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Done ✨
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
-                Non-negotiable spiritual & mental start.
+              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
+                Non-negotiable spiritual & mental start • Darshan, Lemon water, Pooja, Prapti...
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-xl text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
-              {morningDoneCount}/7 Done
-            </span>
-            <button className="text-slate-400 hover:text-slate-600 p-1">
-              {isFoundationExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          <div className="flex items-center gap-2 shrink-0">
+            <button 
+              type="button"
+              className="text-xs font-bold text-amber-800 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>{isFoundationExpanded ? 'Close Foundation ↑' : 'Open Foundation ↓'}</span>
             </button>
           </div>
         </div>

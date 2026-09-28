@@ -154,29 +154,29 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
       </div>
 
       {/* Main Companion Interactive Card */}
-      <div className="relative overflow-hidden rounded-3xl p-5 sm:p-7 bg-white/95 border border-purple-100 shadow-xl backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-3xl p-4 sm:p-5 bg-white/95 border border-purple-100 shadow-md backdrop-blur-md">
         
         {/* Playful background decorative elements */}
-        <div className="absolute top-3 left-5 text-amber-300 opacity-40 select-none text-xl animate-float-slow pointer-events-none">✨</div>
-        <div className="absolute bottom-4 right-6 text-emerald-400 opacity-30 select-none text-2xl animate-bounce-subtle pointer-events-none">🌱</div>
-        <div className="absolute top-6 right-8 text-purple-400 opacity-25 select-none text-xl animate-sparkle pointer-events-none">⭐</div>
+        <div className="absolute top-2 left-4 text-amber-300 opacity-40 select-none text-base animate-float-slow pointer-events-none">✨</div>
+        <div className="absolute bottom-3 right-4 text-emerald-400 opacity-30 select-none text-lg animate-bounce-subtle pointer-events-none">🌱</div>
+        <div className="absolute top-3 right-8 text-purple-400 opacity-25 select-none text-base animate-sparkle pointer-events-none">⭐</div>
 
         {/* Floating XP Animation Popup */}
         {floatingXP !== null && (
-          <div className="absolute top-4 right-1/2 translate-x-1/2 z-30 animate-bounce pointer-events-none">
-            <span className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-300/50 flex items-center gap-1">
+          <div className="absolute top-2 right-1/2 translate-x-1/2 z-30 animate-bounce pointer-events-none">
+            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-300/50 flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 fill-amber-300" />
               +{floatingXP} XP ✨
             </span>
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           
           {/* Character Avatar with living Eye Tracking */}
           <div className="flex flex-col items-center shrink-0">
             <FreyaCharacter
-              size={size}
+              size={size === 'lg' ? 'md' : size}
               state={computedState}
               equippedAccessory={equippedAccessory}
               onPoke={handlePoke}
@@ -185,46 +185,44 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
 
             <button
               onClick={handlePoke}
-              className="mt-3.5 text-[11px] font-bold text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1 cursor-pointer"
+              className="mt-1.5 text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <span>👉 Poke companion</span>
+              <span>👉 Poke</span>
             </button>
           </div>
 
           {/* Dialogue Speech Bubble + Quick Action Tools */}
-          <div className="flex-1 w-full max-w-xl flex flex-col justify-center">
+          <div className="flex-1 w-full min-w-0 flex flex-col justify-center">
             
             {/* Top Companion Identity & Controls */}
-            <div className="flex items-center justify-between gap-3 mb-2.5">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black flex items-center justify-center text-xs shadow-sm">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black flex items-center justify-center text-[11px] shadow-xs">
                   Lv.{stats.level}
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-1.5">
-                    {stats.characterName}
-                    <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
-                      {stats.mood}
-                    </span>
-                  </h3>
-                </div>
+                <h3 className="text-sm font-black text-slate-900 font-display flex items-center gap-1.5">
+                  {stats.characterName}
+                  <span className="text-[9px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                    {stats.mood}
+                  </span>
+                </h3>
               </div>
 
               {/* Quick Controls Tray */}
               <div className="flex items-center gap-1.5">
                 {/* Consistency Streak */}
                 <div 
-                  className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl text-amber-800 font-black text-xs shadow-2xs"
+                  className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl text-amber-800 font-black text-[11px] shadow-2xs"
                   title="Daily consistency streak"
                 >
-                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
+                  <Flame className="w-3 h-3 text-orange-500 fill-orange-500" />
                   <span>{stats.streakDays}d</span>
                 </div>
 
                 {/* Focus Timer */}
                 <button
                   onClick={onOpenTimer}
-                  className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all cursor-pointer shadow-2xs active:scale-95"
+                  className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] rounded-xl border border-indigo-200 transition-all cursor-pointer shadow-2xs active:scale-95"
                   title="20-minute focus sprint"
                 >
                   <span>⏱️ 20m</span>
@@ -233,7 +231,7 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
                 {/* Wardrobe Dress-Up */}
                 <button
                   onClick={onOpenWardrobe}
-                  className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition-all cursor-pointer shadow-2xs active:scale-95"
+                  className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-[11px] rounded-xl border border-purple-200 transition-all cursor-pointer shadow-2xs active:scale-95"
                   title="Open Wardrobe & Accessories"
                 >
                   <span>{equippedAccessory.icon} Dress Up</span>
@@ -242,7 +240,7 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
                 {/* Sound Toggle */}
                 <button
                   onClick={toggleSound}
-                  className="p-1.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                  className="p-1 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
                   title={stats.soundEnabled ? "Mute sounds" : "Enable chimes"}
                 >
                   {stats.soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-indigo-600" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
@@ -251,26 +249,26 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
             </div>
 
             {/* Speech Bubble */}
-            <div className="relative p-4 sm:p-4.5 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-purple-50/50 to-amber-50/40 border border-purple-200/80 shadow-xs mb-3">
+            <div className="relative p-3 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-purple-50/50 to-amber-50/40 border border-purple-200/70 shadow-xs mb-2.5">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-slate-800 text-sm sm:text-base font-semibold leading-relaxed font-display">
+                <p className="text-slate-800 text-xs sm:text-sm font-semibold leading-relaxed font-display">
                   "{currentSpeech}"
                 </p>
                 <button
                   onClick={cycleQuote}
                   title="Hear another thought"
-                  className="text-slate-400 hover:text-indigo-600 p-1 cursor-pointer transition-colors shrink-0"
+                  className="text-slate-400 hover:text-indigo-600 p-0.5 cursor-pointer transition-colors shrink-0"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <RefreshCw className="w-3 h-3" />
                 </button>
               </div>
             </div>
 
             {/* Level & XP Gauge */}
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col gap-1.5">
-              <div className="flex items-center justify-between text-xs font-bold">
-                <div className="flex items-center gap-1.5 text-slate-700">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <div className="p-2.5 rounded-2xl bg-slate-50/80 border border-slate-200/70 flex flex-col gap-1">
+              <div className="flex items-center justify-between text-[11px] font-bold">
+                <div className="flex items-center gap-1 text-slate-700">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
                   <span>Level {stats.level} Progress</span>
                 </div>
                 <div className="text-slate-600">
@@ -278,7 +276,7 @@ export const FreyaCompanion: React.FC<FreyaCompanionProps> = ({
                 </div>
               </div>
 
-              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden p-0.5">
+              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden p-0.5">
                 <div 
                   className="bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-400 h-full rounded-full transition-all duration-700 shadow-2xs"
                   style={{ width: `${Math.max(3, xpPercent)}%` }}

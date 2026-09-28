@@ -16,6 +16,7 @@ interface MasterSyllabusViewProps {
   onLoadTopicIntoDaily: (topic: SyllabusTopic) => void;
   characterName: string;
   onOpenResources?: (stageId?: string) => void;
+  initialTab?: 'ai' | 'swe' | 'timeline' | 'all';
 }
 
 export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
@@ -24,8 +25,9 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
   onLoadTopicIntoDaily,
   characterName,
   onOpenResources,
+  initialTab = 'ai',
 }) => {
-  const [activeTab, setActiveTab] = useState<'ai' | 'swe' | 'timeline' | 'all'>('ai');
+  const [activeTab, setActiveTab] = useState<'ai' | 'swe' | 'timeline' | 'all'>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'uncompleted' | 'completed'>('all');
   const [expandedModuleIds, setExpandedModuleIds] = useState<Record<string, boolean>>({
