@@ -19,6 +19,8 @@ interface QuickAccessDrawerProps {
   onOpenResetConfirm: () => void;
   onOpenTimer: () => void;
   onOpenWardrobe: () => void;
+  onRestartDailyRoutine?: () => void;
+  onOpenAfterStudies?: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   totalVerbatimChecked: number;
@@ -39,6 +41,8 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
   onOpenResetConfirm,
   onOpenTimer,
   onOpenWardrobe,
+  onRestartDailyRoutine,
+  onOpenAfterStudies,
   soundEnabled,
   onToggleSound,
   totalVerbatimChecked,
@@ -47,6 +51,32 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
   if (!isOpen) return null;
 
   const tools = [
+    {
+      id: 'restart-routine',
+      title: "Restart Today's Routine",
+      badge: 'Safe 🛡️',
+      desc: 'Fresh daily start for Morning Camp & habits — preserves all your AI, DSA, and syllabus studies.',
+      icon: <RotateCcw className="w-5 h-5 text-emerald-600" />,
+      bg: 'bg-emerald-50 hover:bg-emerald-100/80 border-emerald-200 text-emerald-950',
+      action: () => {
+        sounds.playClick();
+        onClose();
+        if (onRestartDailyRoutine) onRestartDailyRoutine();
+      },
+    },
+    {
+      id: 'after-studies',
+      title: 'After Studies Routine (11 Habits)',
+      badge: 'Life & Music 🌿',
+      desc: 'Flute, Harmonium, Gym, Mansi, Cheshta, BE task, Reading, Drive, Crochet & Artwork.',
+      icon: <Sparkles className="w-5 h-5 text-emerald-600" />,
+      bg: 'bg-emerald-50 hover:bg-emerald-100/80 border-emerald-200 text-emerald-950',
+      action: () => {
+        sounds.playClick();
+        onClose();
+        if (onOpenAfterStudies) onOpenAfterStudies();
+      },
+    },
     {
       id: 'checklist',
       title: 'Master AI Checklist (0–29)',
@@ -246,17 +276,32 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
         </div>
 
         {/* Footer with Reset and Sound toggles */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+          {onRestartDailyRoutine && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onClose();
+                onRestartDailyRoutine();
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 text-xs font-bold transition cursor-pointer active:scale-95 shadow-xs"
+              title="Restart Morning Foundation & habits for today while keeping all studies safe"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Restart Routine 🛡️</span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               sounds.playClick();
               onClose();
               onOpenResetConfirm();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold transition cursor-pointer active:scale-95"
+            className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-slate-500 hover:text-rose-700 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-xs font-medium transition cursor-pointer"
+            title="Open reset choices modal"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Start Fresh From Zero 🌱</span>
+            <span>Options / Reset</span>
           </button>
 
           <button
@@ -264,7 +309,7 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
               sounds.playClick();
               onToggleSound();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 text-xs font-bold transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 text-xs font-bold transition cursor-pointer"
           >
             {soundEnabled ? (
               <>

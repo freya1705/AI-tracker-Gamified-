@@ -26,6 +26,8 @@ interface QuestSceneTodayProps {
   speechOverride?: string | null;
   floatingXP?: number | null;
   onSelectRealm: (realm: 'today' | 'master' | 'roadmap' | 'resources' | 'quests') => void;
+  onRestartDailyRoutine?: () => void;
+  onOpenResetConfirm?: () => void;
 }
 
 export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
@@ -43,11 +45,13 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
   speechOverride,
   floatingXP = null,
   onSelectRealm,
+  onRestartDailyRoutine,
+  onOpenResetConfirm,
 }) => {
   const [isCampExpanded, setIsCampExpanded] = useState<boolean>(false);
   const [isDsaExpanded, setIsDsaExpanded] = useState<boolean>(true);
   const [isAiLabExpanded, setIsAiLabExpanded] = useState<boolean>(true);
-  const [isLifeExpanded, setIsLifeExpanded] = useState<boolean>(false);
+  const [isLifeExpanded, setIsLifeExpanded] = useState<boolean>(true);
   const [isForgeExpanded, setIsForgeExpanded] = useState<boolean>(false);
   const [isTwilightExpanded, setIsTwilightExpanded] = useState<boolean>(false);
   const [isModeGuidanceOpen, setIsModeGuidanceOpen] = useState<boolean>(false);
@@ -265,11 +269,14 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
       const newCompleted = willBeCompleted
         ? [...currentCompleted, id]
         : currentCompleted.filter(item => item !== id);
-      return { ...prev, life: { selected: currentSelected, completed: newCompleted } };
+      const newSelected = (willBeCompleted && !currentSelected.includes(id))
+        ? [...currentSelected, id]
+        : currentSelected;
+      return { ...prev, life: { selected: newSelected, completed: newCompleted } };
     });
 
     if (willBeCompleted) {
-      onTriggerReaction("Recharged at the Life Oasis! Balance sharpens the mind. 🌿", 'happy', 20);
+      onTriggerReaction(`Completed ${id}! Creative & life balance recharged. 🌿`, 'happy', 20);
     }
   };
 
@@ -354,7 +361,7 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                  Day {daily.dayNumber} · {aiMission.worldName || 'World 1 — Data'}
+                  Day {daily.dayNumber} · {characterName} · {aiMission.worldName || 'World 1 — Data'}
                 </span>
                 <span className="text-xs font-bold text-purple-200">
                   {aiMissionsDoneCount}/6 Missions Shipped
@@ -363,6 +370,27 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
 
               {/* Action shortcuts */}
               <div className="flex items-center gap-1.5">
+                {onRestartDailyRoutine && (
+                  <button
+                    onClick={onRestartDailyRoutine}
+                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-bold text-xs rounded-xl border border-emerald-400/40 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                    title="Restart Morning Foundation & habits for today (AI, DSA & studies remain 100% safe)"
+                  >
+                    <span>🔄 Restart Routine</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setIsLifeExpanded(true);
+                    setTimeout(() => {
+                      document.getElementById('after-studies-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 50);
+                  }}
+                  className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-bold text-xs rounded-xl border border-emerald-400/40 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                  title="Scroll to After Studies Routine (Flute, Harmonium, Gym, Mansi, Cheshta...)"
+                >
+                  <span>🌿 After Studies</span>
+                </button>
                 <button
                   onClick={() => onSelectRealm && onSelectRealm('master')}
                   className="px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-xs rounded-xl border border-amber-300/30 transition cursor-pointer"
@@ -622,12 +650,27 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
             </div>
           </div>
 
-          <button 
-            type="button"
-            className="text-xs font-bold text-amber-800 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-          >
-            <span>{isCampExpanded ? 'Pack Camp ↑' : 'Open Camp Checklist ↓'}</span>
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onRestartDailyRoutine && (
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRestartDailyRoutine();
+                }}
+                className="text-xs font-bold text-amber-900 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-200 to-amber-300 hover:from-amber-300 hover:to-amber-400 border border-amber-400 transition cursor-pointer flex items-center gap-1 shadow-2xs active:scale-95"
+                title="Restart Morning Foundation & habits for today while keeping all AI, DSA, and study progress marked"
+              >
+                <span>🔄 Restart Routine</span>
+              </button>
+            )}
+            <button 
+              type="button"
+              className="text-xs font-bold text-amber-800 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+            >
+              <span>{isCampExpanded ? 'Pack Camp ↑' : 'Open Camp Checklist ↓'}</span>
+            </button>
+          </div>
         </div>
 
         {isCampExpanded && (
@@ -731,9 +774,17 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
           </div>
         </div>
 
-        {/* 3. 🌿 Life Oasis Card */}
+        {/* 3. 🌿 After Studies Routine Card */}
         <div 
-          onClick={() => { sounds.playClick(); setIsLifeExpanded(!isLifeExpanded); }}
+          onClick={() => { 
+            sounds.playClick(); 
+            setIsLifeExpanded(!isLifeExpanded); 
+            if (!isLifeExpanded) {
+              setTimeout(() => {
+                document.getElementById('after-studies-section')?.scrollIntoView({ behavior: 'smooth' });
+              }, 50);
+            }
+          }}
           className={`p-4 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
             isLifeExpanded ? 'bg-emerald-50/80 border-emerald-400 shadow-sm ring-2 ring-emerald-400/20' : 'bg-white border-slate-200 hover:border-emerald-300 shadow-xs'
           }`}
@@ -742,24 +793,23 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xl">🌿</span>
               <h4 className="text-xs font-black text-slate-900 font-display">
-                Life Oasis
+                After Studies Routine
               </h4>
             </div>
             <span className="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-              {life.completed.length} / {life.selected.length || 3}
+              {life.completed.length} / {life.selected.length || LIFE_ROTATION_OPTIONS.length}
             </span>
           </div>
 
-          <div className="text-[11px] text-slate-600 font-medium">
-            Creative Recharge & Health
+          <div className="text-[11px] text-slate-600 font-medium truncate">
+            Flute, Gym, Harmonium, Mansi, Cheshta...
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-emerald-100 text-[10px] font-bold text-emerald-700">
-            <span>{isLifeExpanded ? 'Hide Oasis ▲' : 'Open Oasis ▼'}</span>
-            <span className="text-slate-400">Balance</span>
+            <span>{isLifeExpanded ? 'Hide After Studies ▲' : 'Open After Studies ▼'}</span>
+            <span className="text-slate-400">11 Habits</span>
           </div>
         </div>
-
       </div>
 
       {/* Expanded 1: DSA Trail Detail Station */}
@@ -840,71 +890,6 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
         </section>
       )}
 
-      {/* Expanded 2: Life Oasis Rotation */}
-      {isLifeExpanded && (
-        <section className="bg-white rounded-3xl p-5 border border-emerald-200 shadow-sm animate-fade-in">
-          <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-emerald-100">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl select-none">🌿</span>
-              <h4 className="text-sm font-black text-slate-900 font-display">
-                Life Oasis — Creative & Physical Renewal
-              </h4>
-            </div>
-            <span className="text-xs font-bold text-emerald-700">
-              {life.completed.length}/{life.selected.length} Recharged
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {LIFE_ROTATION_OPTIONS.map((opt) => {
-              const isSelected = life.selected.includes(opt.id);
-              const isCompleted = life.completed.includes(opt.id);
-              return (
-                <div
-                  key={opt.id}
-                  className={`p-3 rounded-2xl border transition flex flex-col justify-between gap-2 ${
-                    isCompleted ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : isSelected ? 'bg-amber-50/70 border-amber-300 text-slate-800' : 'bg-slate-50/60 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl select-none">{opt.icon}</span>
-                    <button
-                      onClick={() => {
-                        sounds.playClick();
-                        onUpdateDaily(prev => {
-                          const curSel = prev.life?.selected || [];
-                          const curComp = prev.life?.completed || [];
-                          const nextSel = curSel.includes(opt.id) ? curSel.filter(x => x !== opt.id) : [...curSel, opt.id];
-                          const nextComp = curComp.filter(x => x !== opt.id);
-                          return { ...prev, life: { selected: nextSel, completed: nextComp } };
-                        });
-                      }}
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer ${
-                        isSelected ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {isSelected ? 'Planned' : '+ Plan'}
-                    </button>
-                  </div>
-                  <span className="text-xs font-bold">{opt.label}</span>
-                  {isSelected && (
-                    <button
-                      onClick={() => handleToggleLifeItem(opt.id)}
-                      className={`w-full py-1 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1 ${
-                        isCompleted ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-emerald-50'
-                      }`}
-                    >
-                      {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
-                      <span>{isCompleted ? 'Done ✨' : 'Mark Done'}</span>
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
       {/* ========================================================= */}
       {/* 🛠️ FLAGSHIP FORGE (PATIENTTRIAGE V2) */}
       {/* ========================================================= */}
@@ -971,6 +956,136 @@ export const QuestSceneToday: React.FC<QuestSceneTodayProps> = ({
                     {isChecked ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Circle className="w-4 h-4 text-slate-300" />}
                     <span className="text-xs">{item.label}</span>
                   </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ========================================================= */}
+      {/* 🌿 AFTER STUDIES ROUTINE (LIFE, MUSIC & CREATIVE OASIS) */}
+      {/* ========================================================= */}
+      <section id="after-studies-section" className="bg-white rounded-3xl p-4 sm:p-5 border border-emerald-200/90 shadow-xs">
+        <div 
+          onClick={() => { sounds.playClick(); setIsLifeExpanded(!isLifeExpanded); }}
+          className="flex items-center justify-between gap-2 cursor-pointer select-none"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shadow-xs shrink-0">
+              🌿
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-slate-800 font-display">
+                  After Studies Routine
+                </h3>
+                <span className="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  {life.completed.length}/{life.selected.length || LIFE_ROTATION_OPTIONS.length} Recharged
+                </span>
+                {life.completed.length > 0 && (
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Balanced ✨
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Flute, Harmonium, Gym, Mansi, Cheshta, BE task, Reading, Drive, Crochet & Artwork.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button 
+              type="button"
+              className="text-xs font-bold text-emerald-800 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>{isLifeExpanded ? 'Collapse ↑' : 'Open After Studies Routine ↓'}</span>
+            </button>
+          </div>
+        </div>
+
+        {isLifeExpanded && (
+          <div className="mt-4 pt-3 border-t border-emerald-100 space-y-3">
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Directly from your handwritten note — tap any habit to mark done:</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  sounds.playClick();
+                  onUpdateDaily(prev => {
+                    const allIds = LIFE_ROTATION_OPTIONS.map(o => o.id);
+                    return { ...prev, life: { ...prev.life, selected: allIds } };
+                  });
+                }}
+                className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
+              >
+                + Plan All 11 Habits
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {LIFE_ROTATION_OPTIONS.map((opt) => {
+                const isSelected = life.selected.includes(opt.id);
+                const isCompleted = life.completed.includes(opt.id);
+
+                return (
+                  <div
+                    key={opt.id}
+                    onClick={() => handleToggleLifeItem(opt.id)}
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between gap-2.5 ${
+                      isCompleted 
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-950 shadow-2xs ring-1 ring-emerald-300' 
+                        : isSelected 
+                        ? 'bg-amber-50/70 border-amber-300 text-slate-800 hover:border-amber-400' 
+                        : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl select-none">{opt.icon}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sounds.playClick();
+                          onUpdateDaily(prev => {
+                            const curSel = prev.life?.selected || [];
+                            const curComp = prev.life?.completed || [];
+                            const nextSel = curSel.includes(opt.id) ? curSel.filter(x => x !== opt.id) : [...curSel, opt.id];
+                            const nextComp = curComp.filter(x => x !== opt.id);
+                            return { ...prev, life: { selected: nextSel, completed: nextComp } };
+                          });
+                        }}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer transition ${
+                          isSelected ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                        }`}
+                        title={isSelected ? 'Remove from planned' : 'Add to planned'}
+                      >
+                        {isSelected ? 'Planned' : '+ Plan'}
+                      </button>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold block leading-snug">{opt.label}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleLifeItem(opt.id);
+                      }}
+                      className={`w-full py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        isCompleted 
+                          ? 'bg-emerald-600 text-white shadow-xs' 
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50 hover:border-emerald-300'
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle2 className="w-4 h-4 text-white" /> : <Circle className="w-4 h-4 text-slate-300" />}
+                      <span>{isCompleted ? 'Done ✨' : 'Mark Done'}</span>
+                    </button>
+                  </div>
                 );
               })}
             </div>

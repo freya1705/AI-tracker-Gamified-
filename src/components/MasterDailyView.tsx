@@ -652,22 +652,22 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
                       Mini World 3
                     </span>
                     <span className="text-xs font-bold text-emerald-700">
-                      Zero Guilt Balance
+                      Life & Creative Balance
                     </span>
                   </div>
                   <h3 className="text-base font-black text-slate-800 font-display mt-0.5">
-                    Life World Rotation
+                    After Studies Routine (Life Oasis)
                   </h3>
                 </div>
               </div>
 
               <span className="px-3 py-1 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
-                {life.completed.length}/{life.selected.length} Recharged
+                {life.completed.length}/{life.selected.length || LIFE_ROTATION_OPTIONS.length} Recharged
               </span>
             </div>
 
             <p className="text-xs text-slate-500 mb-3">
-              Pick 2–3 items to keep your energy, relationships, and mind alive while coding.
+              Directly from your handwritten note: Flute, Harmonium, Gym, Mansi, Cheshta, BE task, Reading, Drive, Crochet & Artwork.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -678,7 +678,8 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
                 return (
                   <div
                     key={opt.id}
-                    className={`p-3 rounded-2xl border transition-all flex flex-col justify-between gap-2 ${
+                    onClick={() => handleToggleCompleteLifeItem(opt.id)}
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                       isCompleted
                         ? 'bg-emerald-50/80 border-emerald-300 text-emerald-900 shadow-2xs'
                         : isSelected
@@ -687,11 +688,15 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-lg">{opt.icon}</span>
+                      <span className="text-xl select-none">{opt.icon}</span>
                       <button
-                        onClick={() => handleSelectLifeItem(opt.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectLifeItem(opt.id);
+                        }}
                         className={`text-[10px] font-black px-1.5 py-0.5 rounded cursor-pointer ${
-                          isSelected ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600'
+                          isSelected ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
                         }`}
                         title={isSelected ? "Remove from today's plan" : "Add to today's plan"}
                       >
@@ -703,19 +708,21 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
                       {opt.label}
                     </span>
 
-                    {isSelected && (
-                      <button
-                        onClick={() => handleToggleCompleteLifeItem(opt.id)}
-                        className={`w-full py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                          isCompleted
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-emerald-50'
-                        }`}
-                      >
-                        {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
-                        <span>{isCompleted ? 'Done ✨' : 'Mark Done'}</span>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleCompleteLifeItem(opt.id);
+                      }}
+                      className={`w-full py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        isCompleted
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white border border-slate-300 text-slate-700 hover:bg-emerald-50'
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5 text-slate-300" />}
+                      <span>{isCompleted ? 'Done ✨' : 'Mark Done'}</span>
+                    </button>
                   </div>
                 );
               })}

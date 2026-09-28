@@ -35,7 +35,7 @@ export const DEFAULT_MASTER_DAILY: MasterDailyState = {
     push: false,
   },
   life: {
-    selected: ['Flute', 'Gym', 'Mansi Cheshta'],
+    selected: ['Flute', 'Gym', 'Read book', 'Mansi', 'cheshta', 'BE task', 'Harmonium'],
     completed: [],
   },
   evening: {
@@ -51,15 +51,18 @@ export const DEFAULT_MASTER_DAILY: MasterDailyState = {
 
 export const LIFE_ROTATION_OPTIONS = [
   { id: 'Read book', icon: '📚', label: 'Read Book' },
-  { id: 'Mansi Cheshta', icon: '🙏', label: 'Mansi Cheshta' },
-  { id: 'BAPS task', icon: '🏛️', label: 'BAPS Task' },
+  { id: 'Mansi', icon: '🧘‍♀️', label: 'Mansi' },
+  { id: 'cheshta', icon: '🕯️', label: 'Cheshta' },
+  { id: 'BE task', icon: '🎓', label: 'BE Task' },
   { id: 'Flute', icon: '🪈', label: 'Flute' },
   { id: 'Harmonium', icon: '🎹', label: 'Harmonium' },
   { id: 'Drive car', icon: '🚗', label: 'Drive Car' },
   { id: 'Crochet', icon: '🧶', label: 'Crochet' },
   { id: 'ISR', icon: '🤝', label: 'ISR Seva' },
-  { id: 'Gym', icon: '🏋️‍♀️', label: 'Gym / Fitness' },
   { id: 'Artwork', icon: '🎨', label: 'Artwork' },
+  { id: 'Gym', icon: '🏋️‍♀️', label: 'Gym / Fitness' },
+  { id: 'BAPS task', icon: '🏛️', label: 'BAPS Task' },
+  { id: 'Mansi Cheshta', icon: '🙏', label: 'Mansi Cheshta' },
 ];
 
 export const INITIAL_TASKS: Task[] = [

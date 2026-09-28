@@ -22,6 +22,7 @@ interface GlobalCommandPaletteProps {
   onOpenTimer: () => void;
   onOpenWardrobe: () => void;
   onOpenResetConfirm: () => void;
+  onRestartDailyRoutine?: () => void;
   onOpenAddTask: () => void;
   tasks: Task[];
 }
@@ -40,6 +41,7 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({
   onOpenTimer,
   onOpenWardrobe,
   onOpenResetConfirm,
+  onRestartDailyRoutine,
   onOpenAddTask,
   tasks,
 }) => {
@@ -64,6 +66,18 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({
       category: 'Navigation',
       icon: <Sparkles className="w-4 h-4 text-emerald-500" />,
       action: () => onNavigateToTab('daily_system'),
+    },
+    {
+      id: 'act-after-studies',
+      title: "🌿 After Studies Routine (Flute, Gym, Harmonium, Mansi, Cheshta...)",
+      category: 'Navigation',
+      icon: <Sparkles className="w-4 h-4 text-emerald-500" />,
+      action: () => {
+        onNavigateToTab('daily_system');
+        setTimeout(() => {
+          document.getElementById('after-studies-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      },
     },
     {
       id: 'act-master',
@@ -135,14 +149,21 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({
       icon: <Sparkles className="w-4 h-4 text-pink-500" />,
       action: onOpenWardrobe,
     },
+    ...(onRestartDailyRoutine ? [{
+      id: 'act-restart-routine',
+      title: "🌅 Restart Today's Routine (Keeps Studies, AI & DSA Safe)",
+      category: 'System',
+      icon: <RotateCcw className="w-4 h-4 text-emerald-500" />,
+      action: onRestartDailyRoutine,
+    }] : []),
     {
       id: 'act-reset',
-      title: "🌱 Refresh / Start from Zero for Today",
+      title: "🌱 Refresh / Options for Today",
       category: 'System',
       icon: <RotateCcw className="w-4 h-4 text-rose-500" />,
       action: onOpenResetConfirm,
     },
-  ], [onNavigateToTab, onOpenChecklist, onOpenResources, onOpenTimer, onOpenFounderRoadmap, onOpenRoadmap, onOpenProblemSheet, onOpenOriginalNote, onOpenAddTask, onOpenWardrobe, onOpenResetConfirm]);
+  ], [onNavigateToTab, onOpenChecklist, onOpenResources, onOpenTimer, onOpenFounderRoadmap, onOpenRoadmap, onOpenProblemSheet, onOpenOriginalNote, onOpenAddTask, onOpenWardrobe, onOpenResetConfirm, onRestartDailyRoutine]);
 
   // Filtered results
   const searchResults = useMemo(() => {

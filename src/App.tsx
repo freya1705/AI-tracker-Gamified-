@@ -398,6 +398,51 @@ export const App: React.FC = () => {
     handleTriggerReaction("🌱 Clean slate! Starting Day 1 right now from zero. Let's make it count, Freya!", 'happy');
   };
 
+  const handleRestartDailyRoutine = () => {
+    // 1. Reset daily routine items only (Morning Foundation, Life Rotation, Evening close)
+    setDaily(prev => ({
+      ...prev,
+      morning: {
+        darshanAarti: false,
+        lemonWater: false,
+        poojaAudio: false,
+        prapti: false,
+        vachanabook: false,
+        cleanDesh: false,
+        planDay: false,
+      },
+      life: {
+        ...prev.life,
+        completed: [],
+      },
+      evening: {
+        completedText: '',
+        learnedText: '',
+        builtText: '',
+        githubCommitted: false,
+        tomorrowTop1: prev.evening?.tomorrowTop1 || '',
+        weeklyGrowth: prev.evening?.weeklyGrowth || '',
+        isClosed: false,
+      },
+      // IMPORTANT: prev.aiMission, prev.dsa, prev.project are 100% PRESERVED! Not unmarking studies, AI, or DSA!
+    }));
+
+    // 2. Unmark only routine tasks in tasks list (leaving aiml, dsa, project, college intact)
+    setTasks(prev => prev.map(t => {
+      if (t.category === 'routine') {
+        return { ...t, completed: false };
+      }
+      return t;
+    }));
+
+    // 3. User stats, XP, level, completedSyllabusTopicIds, verbatimCheckedIds are 100% PRESERVED!
+    setIsResetConfirmOpen(false);
+
+    sounds.playTaskComplete();
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
+    handleTriggerReaction("🌅 Routine restarted for today! Morning Camp & habits are clean, while your AI, DSA & study marks are 100% preserved!", 'happy');
+  };
+
   const handleAddJournalEntry = (entry: Omit<AiJournalEntry, 'id' | 'date'>) => {
     const newEntry: AiJournalEntry = {
       ...entry,
@@ -602,6 +647,8 @@ export const App: React.FC = () => {
               sounds.playClick();
               setIsFounderRoadmapOpen(true);
             }}
+            onRestartDailyRoutine={handleRestartDailyRoutine}
+            onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
             onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
             speechOverride={speechOverride}
             floatingXP={floatingXP}
@@ -792,6 +839,13 @@ export const App: React.FC = () => {
         onOpenCalendar={() => handleNavigateToWorld('calendar')}
         onOpenAddTask={() => setIsTaskModalOpen(true)}
         onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
+        onRestartDailyRoutine={handleRestartDailyRoutine}
+        onOpenAfterStudies={() => {
+          setActiveRealm('today');
+          setTimeout(() => {
+            document.getElementById('after-studies-section')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
         onOpenTimer={() => setIsTimerOpen(true)}
         onOpenWardrobe={() => setIsWardrobeOpen(true)}
         soundEnabled={stats.soundEnabled}
@@ -822,6 +876,7 @@ export const App: React.FC = () => {
         onOpenTimer={() => setIsTimerOpen(true)}
         onOpenWardrobe={() => setIsWardrobeOpen(true)}
         onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
+        onRestartDailyRoutine={handleRestartDailyRoutine}
         onOpenAddTask={() => setIsTaskModalOpen(true)}
         tasks={tasks}
       />
@@ -925,53 +980,107 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Reset from Zero Confirmation Modal */}
+      {/* Reset / Restart Day Modal */}
       {isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 text-center animate-scale-up">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shadow-inner">
-              🌱
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1e1b4b] text-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-purple-500/30 flex flex-col gap-4 text-center animate-scale-up">
+            
+            {/* Header Icon & Title */}
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-400/20 text-amber-300 flex items-center justify-center text-2xl border border-amber-300/30 shadow-inner">
+                🌅
+              </div>
+              <div className="text-left">
+                <h3 className="text-lg font-black text-amber-100 font-display">
+                  Restart Your Day
+                </h3>
+                <p className="text-xs text-purple-200/80">
+                  Today is {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}. Choose how you want to reset:
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-black text-slate-900 font-display">
-                Start Fresh From Zero?
-              </h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                This will refresh your dashboard for <strong>today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})</strong> starting from pure zero:
+
+            {/* Option 1: RECOMMENDED - Routine Restart (Keeps Studies, AI & DSA Safe) */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-purple-950/40 to-slate-900 border-2 border-emerald-500/60 text-left space-y-2.5 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">✨</span>
+                  <h4 className="text-sm font-black text-emerald-300 font-display">
+                    Option 1: Restart Today's Routine (Recommended)
+                  </h4>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  Studies Protected 🛡️
+                </span>
+              </div>
+
+              <p className="text-xs text-purple-100/90 leading-relaxed">
+                Cleans your routine habits for today so you can restart fresh, without unmarking any of your hard-earned study progress!
               </p>
-              <ul className="text-xs text-slate-600 text-left mt-3 bg-slate-50 p-3.5 rounded-2xl space-y-2 border border-slate-200">
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>All daily tasks reset to unchecked for today</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>Morning Foundation (0/7) & Core Engineering clean</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>XP reset to 0 / 100 XP (Level 1, Day 1)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>Syllabus mastery tracking reset to 0 completed topics</span>
-                </li>
-              </ul>
-            </div>
-            <div className="flex items-center justify-center gap-2 pt-2">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                  <span className="font-bold text-amber-300 flex items-center gap-1">
+                    <span>🔄</span>
+                    <span>What Gets Reset for Today:</span>
+                  </span>
+                  <ul className="text-purple-200/80 space-y-0.5 pl-3 list-disc">
+                    <li>Morning Camp Checklist (0/7)</li>
+                    <li>Life Oasis completed rotation</li>
+                    <li>Evening close reflection</li>
+                    <li>Daily routine tasks</li>
+                  </ul>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/30 space-y-1">
+                  <span className="font-bold text-emerald-300 flex items-center gap-1">
+                    <span>🛡️</span>
+                    <span>Kept 100% Safe (Not Unmarked):</span>
+                  </span>
+                  <ul className="text-emerald-100 space-y-0.5 pl-3 list-disc">
+                    <li>AI Missions (Learn, Code, Build, Ship)</li>
+                    <li>DSA Stack & LeetCode marks</li>
+                    <li>17 Stages & 9 Pillars topics</li>
+                    <li>0–29 Verbatim checklist & XP</li>
+                  </ul>
+                </div>
+              </div>
+
               <button
-                onClick={() => setIsResetConfirmOpen(false)}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition cursor-pointer"
+                onClick={handleRestartDailyRoutine}
+                className="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition cursor-pointer active:scale-95 flex items-center justify-center gap-2"
               >
-                Cancel
+                <span>🌅 Restart Today's Routine (Keep Studies Safe)</span>
               </button>
+            </div>
+
+            {/* Option 2: Nuclear / Hard Reset from Zero */}
+            <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-xs font-black text-rose-300 flex items-center gap-1.5">
+                  <span>⚠️</span>
+                  <span>Option 2: Hard Reset Everything (Day 1)</span>
+                </h4>
+                <p className="text-[11px] text-purple-300/70 mt-0.5">
+                  Nuclear reset. Clears all XP, syllabus topics, and returns to absolute Day 1 factory zero.
+                </p>
+              </div>
+
               <button
                 onClick={handleConfirmReset}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold text-xs shadow-md shadow-rose-200 hover:from-rose-600 hover:to-red-700 transition cursor-pointer active:scale-95"
+                className="py-1.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/30 text-xs font-bold transition cursor-pointer whitespace-nowrap active:scale-95 shrink-0"
               >
-                Yes, Start from Zero 🌱
+                Full Hard Reset
               </button>
             </div>
+
+            {/* Cancel Button */}
+            <button
+              onClick={() => setIsResetConfirmOpen(false)}
+              className="w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-purple-300 font-bold text-xs border border-white/10 transition cursor-pointer"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
