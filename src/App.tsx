@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Task, UserStats, MasterDailyState, AiJournalEntry, CalendarDayInfo, SyllabusTopic } from './types';
-import { INITIAL_TASKS, DEFAULT_MASTER_DAILY, INITIAL_JOURNAL_ENTRIES } from './data/initialData';
+import { ACCESSORIES, INITIAL_TASKS, DEFAULT_MASTER_DAILY, INITIAL_JOURNAL_ENTRIES } from './data/initialData';
 import { INITIAL_DUAL_PROGRESS } from './data/heroData';
 import { CompanionAvatar } from './components/CompanionAvatar';
+import { FreyaCharacter } from './components/FreyaCompanion/FreyaCharacter';
 import { MasterDailyView } from './components/MasterDailyView';
 import { MasterSyllabusView } from './components/MasterSyllabusView';
 import { SyllabusTopicPickerModal } from './components/SyllabusTopicPickerModal';
@@ -167,6 +168,8 @@ export const App: React.FC = () => {
     } catch {}
     return [];
   });
+  const [floatingXP, setFloatingXP] = useState<number | null>(null);
+  const [levelUpData, setLevelUpData] = useState<{ newLevel: number } | null>(null);
 
   // Persistence
   useEffect(() => {
@@ -227,6 +230,9 @@ export const App: React.FC = () => {
     setTimeout(() => setSpeechOverride(null), 6000);
 
     if (earnedXP) {
+      setFloatingXP(earnedXP);
+      setTimeout(() => setFloatingXP(null), 1800);
+
       setStats(prev => {
         let newXP = prev.currentXP + earnedXP;
         let newLevel = prev.level;
@@ -240,6 +246,7 @@ export const App: React.FC = () => {
           newMood = 'excited';
           sounds.playLevelUp();
           confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+          setLevelUpData({ newLevel });
         }
 
         return {
@@ -642,6 +649,7 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
         
         {/* 1. Companion Avatar Showcase (With Career Ladder & 4 Worlds) */}
+        {/* 1. Companion Avatar Showcase (With Career Ladder & 4 Worlds) */}
         <CompanionAvatar
           stats={stats}
           daily={daily}
@@ -659,9 +667,10 @@ export const App: React.FC = () => {
             setIsFounderRoadmapOpen(true);
           }}
           speechOverride={speechOverride}
+          floatingXP={floatingXP}
         />
 
-        {/* 2. Top-level View Switcher Tabs: Daily System, Calendar, AI Hero Worlds, All Quests */}
+        {/* 2. Top-level View Switcher Tabs: Today, Knowledge, Adventure Map, Hero Worlds, Quests */}
         <div className="w-full max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             <button
@@ -675,8 +684,8 @@ export const App: React.FC = () => {
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Master Daily 🌱</span>
+              <LayoutDashboard className="w-4 h-4 text-emerald-400" />
+              <span>🌱 Today</span>
             </button>
 
             <button
@@ -691,7 +700,7 @@ export const App: React.FC = () => {
               }`}
             >
               <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>Master Syllabus 🧠</span>
+              <span>🧠 Knowledge</span>
             </button>
 
             <button
@@ -706,7 +715,7 @@ export const App: React.FC = () => {
               }`}
             >
               <Calendar className="w-4 h-4 text-amber-500" />
-              <span>Calendar 📅</span>
+              <span>🗺 Adventure Map</span>
             </button>
 
             <button
@@ -721,7 +730,7 @@ export const App: React.FC = () => {
               }`}
             >
               <Crown className="w-4 h-4 text-purple-400" />
-              <span>AI Hero Worlds 👑</span>
+              <span>👑 Hero Worlds</span>
             </button>
 
             <button
@@ -735,13 +744,13 @@ export const App: React.FC = () => {
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
-              <ListTodo className="w-4 h-4" />
-              <span>Quests ({tasks.length})</span>
+              <ListTodo className="w-4 h-4 text-sky-400" />
+              <span>🏆 Quests ({tasks.length})</span>
             </button>
           </div>
 
           <span className="text-xs text-slate-500 font-medium hidden md:inline">
-            {activeMainTab === 'daily_system' ? "Today's Missions A–F" : activeMainTab === 'syllabus' ? '307 Topics • 26 AI Modules + 9 SWE Pillars' : activeMainTab === 'calendar' ? 'Sept 2026 → Mar 2027 Schedule' : activeMainTab === 'hero_worlds' ? '12 Worlds & Dual Progress' : 'Custom Task Catalog'}
+            {activeMainTab === 'daily_system' ? "Today's World • Missions A–F" : activeMainTab === 'syllabus' ? 'Knowledge World • 307 Topics • 26 AI Modules + 9 SWE Pillars' : activeMainTab === 'calendar' ? 'Adventure Map • Sept 2026 → Mar 2027 Schedule' : activeMainTab === 'hero_worlds' ? 'Hero Worlds • 12 Boss Battles & Dual Progress' : 'Quest Board • Custom Quests & Catalog'}
           </span>
         </div>
 
@@ -790,38 +799,80 @@ export const App: React.FC = () => {
         {/* VIEW: MASTER SYLLABUS (26 AI MODULES + 9 SWE PILLARS) */}
         {/* ========================================================= */}
         {activeMainTab === 'syllabus' && (
-          <MasterSyllabusView
-            completedTopicIds={completedSyllabusTopicIds}
-            onToggleTopic={handleToggleSyllabusTopic}
-            onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
-            characterName={stats.characterName}
-            onOpenResources={(stageId) => {
-              sounds.playClick();
-              setSelectedStageForVault(stageId);
-              setResourceDrawerFilter('all');
-              setIsResourceDrawerOpen(true);
-            }}
-          />
+          <div className="space-y-4">
+            <CompanionAvatar
+              stats={stats}
+              daily={daily}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+              onOpenWardrobe={() => setIsWardrobeOpen(true)}
+              onOpenTimer={() => setIsTimerOpen(true)}
+              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+              compact
+              size="sm"
+              characterState="focus"
+              speechOverride="Knowledge World: 26 AI Modules + 9 SWE Pillars. Pick 1 concept to conquer today without pressure!"
+            />
+            <MasterSyllabusView
+              completedTopicIds={completedSyllabusTopicIds}
+              onToggleTopic={handleToggleSyllabusTopic}
+              onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
+              characterName={stats.characterName}
+              onOpenResources={(stageId) => {
+                sounds.playClick();
+                setSelectedStageForVault(stageId);
+                setResourceDrawerFilter('all');
+                setIsResourceDrawerOpen(true);
+              }}
+            />
+          </div>
         )}
 
         {/* ========================================================= */}
         {/* VIEW 2: CALENDAR & MILESTONES */}
         {/* ========================================================= */}
         {activeMainTab === 'calendar' && (
-          <CalendarView
-            currentDayNumber={daily.dayNumber}
-            onSelectDayForSystem={handleSelectDayForSystem}
-          />
+          <div className="space-y-4">
+            <CompanionAvatar
+              stats={stats}
+              daily={daily}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+              onOpenWardrobe={() => setIsWardrobeOpen(true)}
+              onOpenTimer={() => setIsTimerOpen(true)}
+              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+              compact
+              size="sm"
+              characterState="streak"
+              speechOverride={`Adventure Map: Day ${daily.dayNumber} of our 180-day master journey! Every daily commit moves us toward AI Founder.`}
+            />
+            <CalendarView
+              currentDayNumber={daily.dayNumber}
+              onSelectDayForSystem={handleSelectDayForSystem}
+            />
+          </div>
         )}
 
         {/* ========================================================= */}
         {/* VIEW 3: AI HERO WORLDS & DUAL PROGRESS */}
         {/* ========================================================= */}
         {activeMainTab === 'hero_worlds' && (
-          <AiHeroWorldsView
-            stats={stats}
-            onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-          />
+          <div className="space-y-4">
+            <CompanionAvatar
+              stats={stats}
+              daily={daily}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+              onOpenWardrobe={() => setIsWardrobeOpen(true)}
+              onOpenTimer={() => setIsTimerOpen(true)}
+              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+              compact
+              size="sm"
+              characterState="levelUp"
+              speechOverride="Hero Worlds: Conquer the 12 Boss Battles to unlock Dual Mastery (Knowledge + Build Power)!"
+            />
+            <AiHeroWorldsView
+              stats={stats}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+            />
+          </div>
         )}
 
         {/* ========================================================= */}
@@ -829,6 +880,18 @@ export const App: React.FC = () => {
         {/* ========================================================= */}
         {activeMainTab === 'all_quests' && (
           <div className="w-full max-w-4xl mx-auto space-y-4">
+            <CompanionAvatar
+              stats={stats}
+              daily={daily}
+              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+              onOpenWardrobe={() => setIsWardrobeOpen(true)}
+              onOpenTimer={() => setIsTimerOpen(true)}
+              onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
+              compact
+              size="sm"
+              characterState="idle"
+              speechOverride="Quest Board: Custom challenges & backlog! Pick a quest and start a 20-minute focus sprint to conquer it."
+            />
             
             {/* Search & Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -984,6 +1047,40 @@ export const App: React.FC = () => {
         filterMode={syllabusPickerMode}
         onSelectTopic={handleLoadSyllabusTopicIntoDaily}
       />
+
+      {/* Level Up Celebration Moment */}
+      {levelUpData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-purple-200 text-center flex flex-col items-center gap-3">
+            <div className="text-3xl animate-bounce">✨ 👑 ✨</div>
+            <FreyaCharacter 
+              size="md" 
+              state="levelUp" 
+              equippedAccessory={ACCESSORIES.find(a => a.id === stats.equippedAccessoryId)} 
+            />
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                ✨ LEVEL UP! ✨
+              </span>
+              <h3 className="text-xl font-black text-slate-900 font-display mt-1.5">
+                {stats.characterName} reached Level {levelUpData.newLevel}!
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Consistency is forging an elite AI Engineer. Keep the momentum alive!
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setLevelUpData(null);
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white font-black text-xs shadow-md shadow-purple-200 hover:from-purple-700 hover:to-indigo-700 transition cursor-pointer active:scale-95"
+            >
+              Continue Adventure →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Reset from Zero Confirmation Modal */}
       {isResetConfirmOpen && (
