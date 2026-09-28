@@ -4,6 +4,12 @@ import { ACCESSORIES, INITIAL_TASKS, DEFAULT_MASTER_DAILY, INITIAL_JOURNAL_ENTRI
 import { INITIAL_DUAL_PROGRESS } from './data/heroData';
 import { CompanionAvatar } from './components/CompanionAvatar';
 import { FreyaCharacter } from './components/FreyaCompanion/FreyaCharacter';
+import { WorldHeader, ActiveRealm } from './components/RPG/WorldHeader';
+import { QuestSceneToday } from './components/RPG/QuestSceneToday';
+import { AdventureMapMaster } from './components/RPG/AdventureMapMaster';
+import { RoadmapHorizon } from './components/RPG/RoadmapHorizon';
+import { KnowledgeLibrary } from './components/RPG/KnowledgeLibrary';
+import { QuestBoardView } from './components/RPG/QuestBoardView';
 import { AppHeader } from './components/Header/AppHeader';
 import { QuickAccessDrawer } from './components/QuickAccess/QuickAccessDrawer';
 import { GlobalCommandPalette } from './components/CommandPalette/GlobalCommandPalette';
@@ -126,8 +132,8 @@ export const App: React.FC = () => {
     return INITIAL_JOURNAL_ENTRIES;
   });
 
-  // Active top-level world: 'daily_system' (Today) | 'master' (Master Knowledge Map)
-  const [activeWorld, setActiveWorld] = useState<'daily_system' | 'master'>('daily_system');
+  // Active top-level world realm
+  const [activeRealm, setActiveRealm] = useState<ActiveRealm>('today');
   const [masterSubTab, setMasterSubTab] = useState<string>('ai');
 
   // Quick Access & Global Command Palette states
@@ -146,11 +152,25 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleNavigateToWorld = (world: 'daily_system' | 'master', subTab?: string) => {
+  const handleNavigateToWorld = (realm: any, subTab?: string) => {
     sounds.playClick();
-    setActiveWorld(world);
-    if (subTab) {
-      setMasterSubTab(subTab);
+    if (realm === 'daily_system' || realm === 'today') {
+      setActiveRealm('today');
+    } else if (realm === 'master') {
+      setActiveRealm('master');
+      if (subTab) {
+        setMasterSubTab(subTab);
+      }
+    } else if (realm === 'roadmap') {
+      setActiveRealm('roadmap');
+    } else if (realm === 'resources') {
+      setActiveRealm('resources');
+    } else if (realm === 'quests') {
+      setActiveRealm('quests');
+    } else if (realm === 'calendar') {
+      setActiveRealm('calendar');
+    } else {
+      setActiveRealm(realm as ActiveRealm);
     }
   };
 
@@ -463,7 +483,7 @@ export const App: React.FC = () => {
         milestone: dayInfo.projectMilestone || prev.project.milestone
       }
     }));
-    setActiveWorld('daily_system');
+    setActiveRealm('today');
     handleTriggerReaction(`Loaded Day ${dayInfo.dayNumber}: "${dayInfo.title}"! Let's conquer today's AI Hero missions! 🚀`, 'excited', 30);
   };
 
@@ -506,7 +526,7 @@ export const App: React.FC = () => {
           }
         }
       }));
-      setActiveWorld('daily_system');
+      setActiveRealm('today');
       handleTriggerReaction(`Loaded "${topic.title}" from AI Syllabus! Let's learn, understand, code, and ship today! 🚀`, 'excited', 25);
     } else {
       setDaily(prev => ({
@@ -526,120 +546,74 @@ export const App: React.FC = () => {
           commitCode: false,
         }
       }));
-      setActiveWorld('daily_system');
+      setActiveRealm('today');
       handleTriggerReaction(`Loaded "${topic.title}" into DSA / SWE Stack! 4 LeetCodes + Dry Runs mode! ⚡`, 'proud', 25);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#faf7f5] text-slate-800 flex flex-col">
+    <div className="min-h-screen bg-[#0d0d1a] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e1b4b]/60 via-[#0d0d1a] to-[#080811] text-slate-100 flex flex-col selection:bg-amber-400 selection:text-slate-900">
       
-      {/* 1. Unified Clean App Header */}
-      <AppHeader
-        activeTab={activeWorld}
-        onSelectTab={(world) => {
+      {/* 1. World RPG Top Navigation Header */}
+      <WorldHeader
+        activeRealm={activeRealm}
+        onSelectRealm={(realm) => {
           sounds.playClick();
-          setActiveWorld(world);
+          setActiveRealm(realm);
         }}
         onOpenSearch={() => setIsCommandPaletteOpen(true)}
-        onOpenQuickAccess={() => setIsQuickAccessOpen(true)}
+        onOpenSatchel={() => setIsQuickAccessOpen(true)}
         stats={stats}
       />
 
-      {/* Main App Container */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
+      {/* Main Adventure Realm Container */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-6">
         
         {/* ========================================================= */}
-        {/* WORLD 1: 🌱 TODAY ("What do I do?") */}
+        {/* REALM 1: 🌱 TODAY (Quest Scene & Living Freya) */}
         {/* ========================================================= */}
-        {activeWorld === 'daily_system' && (
-          <div className="space-y-6 animate-fade-in">
-            {/* Top Greeting & Action Anchor */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-200">
-                  Today's Mission Ground
-                </span>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-display mt-0.5">
-                  ✨ Good Morning, {stats.characterName}
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleNavigateToWorld('master', 'ai')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition cursor-pointer active:scale-95"
-                  title="Explore Master Knowledge Universe (17 Stages • 9 SWE Pillars)"
-                >
-                  <Brain className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Master Knowledge Map →</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Recomposed Companion Module */}
-            <CompanionAvatar
-              stats={stats}
-              daily={daily}
-              onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
-              onOpenWardrobe={() => {
-                sounds.playClick();
-                setIsWardrobeOpen(true);
-              }}
-              onOpenTimer={() => {
-                sounds.playClick();
-                setIsTimerOpen(true);
-              }}
-              onOpenFounderRoadmap={() => {
-                sounds.playClick();
-                setIsFounderRoadmapOpen(true);
-              }}
-              speechOverride={speechOverride}
-              floatingXP={floatingXP}
-              size="md"
-            />
-
-            {/* Daily Mode Selector */}
-            <DailyModeSelector
-              currentMode={stats.dailyMode}
-              onSelectMode={(mode) => {
-                setStats(prev => ({ ...prev, dailyMode: mode }));
-                if (mode === 'busy') {
-                  handleTriggerReaction("Busy college day mode! 20–45 mins. 1 concept + 1 DSA. Never zero days!", 'sleepy');
-                } else if (mode === 'normal') {
-                  handleTriggerReaction("Normal day mode! 1.5–2.5 hours of solid study, code, and commit!", 'happy');
-                } else {
-                  handleTriggerReaction("Free day mode! 4–6 hours! Let's build a flagship feature for PatientTriage!", 'excited');
-                }
-              }}
-            />
-
-            {/* Today's World: Hero Quest Book & Mini Worlds */}
-            <MasterDailyView
-              daily={daily}
-              onUpdateDaily={setDaily}
-              onTriggerReaction={handleTriggerReaction}
-              characterName={stats.characterName}
-              onOpenTopicPicker={(mode) => {
-                sounds.playClick();
-                setSyllabusPickerMode(mode);
-                setIsSyllabusPickerOpen(true);
-              }}
-              onOpenResources={(stageId) => {
-                sounds.playClick();
-                setSelectedStageForVault(stageId);
-                setResourceDrawerFilter('all');
-                setIsResourceDrawerOpen(true);
-              }}
-            />
-          </div>
+        {activeRealm === 'today' && (
+          <QuestSceneToday
+            stats={stats}
+            daily={daily}
+            onUpdateDaily={setDaily}
+            onTriggerReaction={handleTriggerReaction}
+            characterName={stats.characterName}
+            onOpenTopicPicker={(mode) => {
+              sounds.playClick();
+              setSyllabusPickerMode(mode);
+              setIsSyllabusPickerOpen(true);
+            }}
+            onOpenResources={(stageId) => {
+              sounds.playClick();
+              setSelectedStageForVault(stageId);
+              setResourceDrawerFilter('all');
+              setIsResourceDrawerOpen(true);
+            }}
+            onOpenWardrobe={() => {
+              sounds.playClick();
+              setIsWardrobeOpen(true);
+            }}
+            onOpenTimer={() => {
+              sounds.playClick();
+              setIsTimerOpen(true);
+            }}
+            onOpenFounderRoadmap={() => {
+              sounds.playClick();
+              setIsFounderRoadmapOpen(true);
+            }}
+            onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+            speechOverride={speechOverride}
+            floatingXP={floatingXP}
+            onSelectRealm={(realm) => handleNavigateToWorld(realm)}
+          />
         )}
 
         {/* ========================================================= */}
-        {/* WORLD 2: 🧠 MASTER ("Where am I going?") */}
+        {/* REALM 2: 🗺️ MASTER (Adventure Map & World Landmarks) */}
         {/* ========================================================= */}
-        {activeWorld === 'master' && (
-          <MasterUniverseView
+        {activeRealm === 'master' && (
+          <AdventureMapMaster
             stats={stats}
             daily={daily}
             tasks={tasks}
@@ -648,8 +622,6 @@ export const App: React.FC = () => {
             journalEntries={journalEntries}
             onToggleTopic={handleToggleSyllabusTopic}
             onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
-            onToggleTaskComplete={handleToggleComplete}
-            onDeleteTask={handleDeleteTask}
             onToggleVerbatimItem={handleToggleVerbatimItem}
             onResetVerbatimChecklist={handleResetVerbatimChecklist}
             onSelectDayForSystem={handleSelectDayForSystem}
@@ -686,12 +658,124 @@ export const App: React.FC = () => {
             }}
             onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
             initialSubTab={masterSubTab}
+            onSelectRealm={(realm) => handleNavigateToWorld(realm)}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* REALM 3: 👑 ROADMAP (The Road to AI Founder) */}
+        {/* ========================================================= */}
+        {activeRealm === 'roadmap' && (
+          <RoadmapHorizon
+            stats={stats}
+            journalEntries={journalEntries}
+            onAddJournalEntry={handleAddJournalEntry}
+            onOpenFounderRoadmapModal={() => {
+              sounds.playClick();
+              setIsFounderRoadmapOpen(true);
+            }}
+            onOpenRoadmapModal={() => {
+              sounds.playClick();
+              setIsRoadmapOpen(true);
+            }}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* REALM 4: 📚 RESOURCES (Knowledge Codex & Library) */}
+        {/* ========================================================= */}
+        {activeRealm === 'resources' && (
+          <KnowledgeLibrary
+            onOpenProblemSheet={() => {
+              sounds.playClick();
+              setIsProblemOpen(true);
+            }}
+            onOpenOriginalNote={() => {
+              sounds.playClick();
+              setIsPhotoOpen(true);
+            }}
+            onOpenRoadmap={() => {
+              sounds.playClick();
+              setIsRoadmapOpen(true);
+            }}
+            onOpenFounderRoadmap={() => {
+              sounds.playClick();
+              setIsFounderRoadmapOpen(true);
+            }}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* REALM 5: 📜 QUESTS (Adventurer's Quest Board) */}
+        {/* ========================================================= */}
+        {activeRealm === 'quests' && (
+          <QuestBoardView
+            tasks={tasks}
+            onToggleComplete={handleToggleComplete}
+            onDeleteTask={handleDeleteTask}
+            onOpenAddTask={() => {
+              sounds.playClick();
+              setIsTaskModalOpen(true);
+            }}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* REALM 6: 📅 CALENDAR (180-Day Expedition Timeline) */}
+        {/* ========================================================= */}
+        {activeRealm === 'calendar' && (
+          <AdventureMapMaster
+            stats={stats}
+            daily={daily}
+            tasks={tasks}
+            completedTopicIds={completedSyllabusTopicIds}
+            verbatimCheckedIds={verbatimCheckedIds}
+            journalEntries={journalEntries}
+            onToggleTopic={handleToggleSyllabusTopic}
+            onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
+            onToggleVerbatimItem={handleToggleVerbatimItem}
+            onResetVerbatimChecklist={handleResetVerbatimChecklist}
+            onSelectDayForSystem={handleSelectDayForSystem}
+            onOpenTopicPicker={(mode) => {
+              sounds.playClick();
+              setSyllabusPickerMode(mode);
+              setIsSyllabusPickerOpen(true);
+            }}
+            onOpenResources={(stageId) => {
+              sounds.playClick();
+              setSelectedStageForVault(stageId);
+              setResourceDrawerFilter('all');
+              setIsResourceDrawerOpen(true);
+            }}
+            onOpenFounderRoadmap={() => {
+              sounds.playClick();
+              setIsFounderRoadmapOpen(true);
+            }}
+            onOpenRoadmap={() => {
+              sounds.playClick();
+              setIsRoadmapOpen(true);
+            }}
+            onOpenProblemSheet={() => {
+              sounds.playClick();
+              setIsProblemOpen(true);
+            }}
+            onOpenOriginalNote={() => {
+              sounds.playClick();
+              setIsPhotoOpen(true);
+            }}
+            onOpenAddTask={() => {
+              sounds.playClick();
+              setIsTaskModalOpen(true);
+            }}
+            onUpdateStats={(newStats) => setStats(prev => ({ ...prev, ...newStats }))}
+            initialSubTab="calendar"
+            onSelectRealm={(realm) => handleNavigateToWorld(realm)}
           />
         )}
 
       </main>
 
-      {/* Quick Access Drawer */}
+      {/* Adventurer's Satchel (Quick Access Drawer) */}
       <QuickAccessDrawer
         isOpen={isQuickAccessOpen}
         onClose={() => setIsQuickAccessOpen(false)}
@@ -703,9 +787,9 @@ export const App: React.FC = () => {
         }}
         onOpenProblemSheet={() => setIsProblemOpen(true)}
         onOpenOriginalNote={() => setIsPhotoOpen(true)}
-        onOpenRoadmap={() => setIsRoadmapOpen(true)}
+        onOpenRoadmap={() => handleNavigateToWorld('roadmap')}
         onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
-        onOpenCalendar={() => handleNavigateToWorld('master', 'calendar')}
+        onOpenCalendar={() => handleNavigateToWorld('calendar')}
         onOpenAddTask={() => setIsTaskModalOpen(true)}
         onOpenResetConfirm={() => setIsResetConfirmOpen(true)}
         onOpenTimer={() => setIsTimerOpen(true)}
@@ -743,14 +827,14 @@ export const App: React.FC = () => {
       />
 
       {/* Footer Encouragement Banner */}
-      <footer className="mt-auto border-t border-slate-200 bg-white/70 backdrop-blur-sm py-4 px-6 text-center text-xs text-slate-500">
+      <footer className="mt-auto border-t border-purple-500/20 bg-[#120f26]/80 backdrop-blur-md py-4 px-6 text-center text-xs text-purple-300">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Freya's Daily Law:</span>
+            <span className="font-bold text-amber-200">Freya's Daily Law:</span>
             <span>Finish Morning Foundation → Core Engineering (DSA + AI) → Commit Code → Life Rotation</span>
           </div>
-          <div className="text-purple-600 font-semibold flex items-center gap-1">
-            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+          <div className="text-amber-300 font-semibold flex items-center gap-1">
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
             <span>Becoming an AI-Powered Engineer & Founder!</span>
           </div>
         </div>
