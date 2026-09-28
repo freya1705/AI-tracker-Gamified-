@@ -18,12 +18,15 @@ import { FounderRoadmapModal } from './components/FounderRoadmapModal';
 import { ProblemOfTheWeekModal } from './components/ProblemOfTheWeekModal';
 import { RoutinePhotoModal } from './components/RoutinePhotoModal';
 import { ResourceVaultDrawer } from './components/ResourceVaultDrawer';
+import { MasterChecklistDrawer } from './components/MasterChecklistDrawer';
+import { TOTAL_VERBATIM_ITEMS } from './data/verbatimChecklistData';
 import { sounds } from './utils/audio';
 import confetti from 'canvas-confetti';
 import { 
   Plus, Search, Compass, Lightbulb, FileText, 
   Sparkles, CheckCircle2, Clock, Filter, BookOpen, 
-  Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown, RotateCcw
+  Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown, RotateCcw,
+  CheckSquare
 } from 'lucide-react';
 
 const STORAGE_KEY_TASKS = 'freya_quest_tasks_v3';
@@ -31,6 +34,7 @@ const STORAGE_KEY_STATS = 'freya_quest_stats_v3';
 const STORAGE_KEY_DAILY = 'freya_quest_daily_v3';
 const STORAGE_KEY_JOURNAL = 'freya_quest_journal_v3';
 const STORAGE_KEY_SYLLABUS = 'freya_quest_syllabus_v2';
+const STORAGE_KEY_VERBATIM_CHECKLIST = 'freya_quest_verbatim_checklist_v1';
 
 export const App: React.FC = () => {
   // Master Daily State with robust schema migration
@@ -152,6 +156,17 @@ export const App: React.FC = () => {
   const [isResourceDrawerOpen, setIsResourceDrawerOpen] = useState(false);
   const [resourceDrawerFilter, setResourceDrawerFilter] = useState('all');
   const [selectedStageForVault, setSelectedStageForVault] = useState<string | undefined>(undefined);
+  const [isChecklistDrawerOpen, setIsChecklistDrawerOpen] = useState(false);
+  const [verbatimCheckedIds, setVerbatimCheckedIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_VERBATIM_CHECKLIST);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
 
   // Persistence
   useEffect(() => {
@@ -183,6 +198,28 @@ export const App: React.FC = () => {
       localStorage.setItem(STORAGE_KEY_SYLLABUS, JSON.stringify(completedSyllabusTopicIds));
     } catch {}
   }, [completedSyllabusTopicIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_VERBATIM_CHECKLIST, JSON.stringify(verbatimCheckedIds));
+    } catch {}
+  }, [verbatimCheckedIds]);
+
+  const handleToggleVerbatimItem = (id: string) => {
+    setVerbatimCheckedIds(prev => {
+      const isChecked = prev.includes(id);
+      if (isChecked) {
+        return prev.filter(x => x !== id);
+      } else {
+        handleTriggerReaction("Mastered topic in Master AI Checklist! 🚀", 'happy', 15);
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleResetVerbatimChecklist = () => {
+    setVerbatimCheckedIds([]);
+  };
 
   // Trigger companion speech & XP
   const handleTriggerReaction = (speech: string, mood: any, earnedXP?: number) => {
@@ -296,6 +333,7 @@ export const App: React.FC = () => {
       dualProgress: INITIAL_DUAL_PROGRESS,
     });
     setCompletedSyllabusTopicIds([]);
+    setVerbatimCheckedIds([]);
     setJournalEntries(INITIAL_JOURNAL_ENTRIES);
     setIsResetConfirmOpen(false);
 
@@ -511,6 +549,22 @@ export const App: React.FC = () => {
             >
               <Compass className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">AI Guide</span>
+            </button>
+
+            {/* Master AI Checklist (0-29) Button */}
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setIsChecklistDrawerOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs rounded-xl border border-emerald-300 transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Open Exact 30-Section AI Syllabus Checklist (Sections 0 to 29)"
+            >
+              <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="inline">Checklist (0–29) 📋</span>
+              <span className="text-[10px] font-black px-1.5 py-0.2 rounded-md bg-emerald-200/90 text-emerald-950">
+                {verbatimCheckedIds.length}/{TOTAL_VERBATIM_ITEMS}
+              </span>
             </button>
 
             {/* Free Resource Vault Button */}
@@ -982,23 +1036,53 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Side Tab for Instant Resource Access */}
-      <button
-        onClick={() => {
-          sounds.playClick();
-          setSelectedStageForVault(undefined);
-          setResourceDrawerFilter('all');
-          setIsResourceDrawerOpen(true);
-        }}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-b from-indigo-700 via-purple-700 to-indigo-900 text-white font-bold text-xs py-3.5 px-2 rounded-l-2xl shadow-2xl hover:px-2.5 transition-all flex flex-col items-center gap-2 group cursor-pointer border-t border-b border-l border-white/30 active:scale-95"
-        title="Open Free Resource Vault Side Panel"
-      >
-        <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
-        <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] font-black uppercase py-0.5">
-          Resources
-        </span>
-        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-      </button>
+      {/* Floating Side Bar Docks for Instant Access */}
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2.5">
+        {/* 1. Master AI Checklist (0-29) Sheet Button */}
+        <button
+          onClick={() => {
+            sounds.playClick();
+            setIsChecklistDrawerOpen(true);
+          }}
+          className="bg-gradient-to-b from-emerald-600 via-teal-700 to-slate-900 text-white font-bold text-xs py-3.5 px-2 rounded-l-2xl shadow-2xl hover:px-2.5 transition-all flex flex-col items-center gap-1.5 group cursor-pointer border-t border-b border-l border-white/30 active:scale-95"
+          title="Open Master AI Checklist (0 to 29) Side Sheet"
+        >
+          <CheckSquare className="w-4 h-4 text-emerald-300 group-hover:scale-110 transition-transform" />
+          <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] font-black uppercase py-0.5">
+            Checklist
+          </span>
+          <span className="text-[9px] font-black px-1 py-0.2 rounded-md bg-emerald-400 text-slate-950 shadow-xs">
+            {verbatimCheckedIds.length}
+          </span>
+        </button>
+
+        {/* 2. Free Resources Vault Button */}
+        <button
+          onClick={() => {
+            sounds.playClick();
+            setSelectedStageForVault(undefined);
+            setResourceDrawerFilter('all');
+            setIsResourceDrawerOpen(true);
+          }}
+          className="bg-gradient-to-b from-indigo-700 via-purple-700 to-indigo-900 text-white font-bold text-xs py-3.5 px-2 rounded-l-2xl shadow-2xl hover:px-2.5 transition-all flex flex-col items-center gap-1.5 group cursor-pointer border-t border-b border-l border-white/30 active:scale-95"
+          title="Open Free Resource Vault Side Panel"
+        >
+          <BookOpen className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+          <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] font-black uppercase py-0.5">
+            Resources
+          </span>
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+        </button>
+      </div>
+
+      {/* Master AI Checklist Side Drawer Sheet */}
+      <MasterChecklistDrawer
+        isOpen={isChecklistDrawerOpen}
+        onClose={() => setIsChecklistDrawerOpen(false)}
+        checkedIds={verbatimCheckedIds}
+        onToggleItem={handleToggleVerbatimItem}
+        onResetAll={handleResetVerbatimChecklist}
+      />
 
       {/* Free Resource Vault Side Drawer */}
       <ResourceVaultDrawer
