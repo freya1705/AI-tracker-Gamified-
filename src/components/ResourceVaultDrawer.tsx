@@ -10,16 +10,27 @@ interface ResourceVaultDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialFilter?: string;
+  selectedStageId?: string;
 }
 
 export const ResourceVaultDrawer: React.FC<ResourceVaultDrawerProps> = ({
   isOpen,
   onClose,
   initialFilter = 'all',
+  selectedStageId,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>(initialFilter);
+  const [activeStageId, setActiveStageId] = useState<string | undefined>(selectedStageId);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Sync activeStageId when selectedStageId changes
+  React.useEffect(() => {
+    setActiveStageId(selectedStageId);
+    if (selectedStageId) {
+      setActiveFilter('all');
+    }
+  }, [selectedStageId]);
 
   // Copy URL to clipboard
   const handleCopy = (id: string, url: string) => {
@@ -32,14 +43,19 @@ export const ResourceVaultDrawer: React.FC<ResourceVaultDrawerProps> = ({
   // Filtered resources
   const filteredList = useMemo(() => {
     return FREE_RESOURCE_LIST.filter(item => {
-      // 1. Category Filter
+      // Stage ID Filter
+      if (activeStageId && (!item.stageIds || !item.stageIds.includes(activeStageId))) {
+        return false;
+      }
+
+      // Category Filter
       if (activeFilter === 'starter' && !item.isStarterSet) return false;
       if (activeFilter === 'foundation' && !['0', '1', '2'].includes(item.sectionNum)) return false;
       if (activeFilter === 'data_ml' && !['3–4', '5', '6–9', '11–12', '13'].includes(item.sectionNum)) return false;
       if (activeFilter === 'llm_rag' && !['14–15', '16–17', '18', '19'].includes(item.sectionNum)) return false;
-      if (activeFilter === 'deploy_adv' && !['20', '21', '22', '23', '27', '28'].includes(item.sectionNum)) return false;
+      if (activeFilter === 'deploy_adv' && !['20', '21', '22', '23', '27', '28', 'SWE'].includes(item.sectionNum)) return false;
 
-      // 2. Search Query
+      // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -53,7 +69,7 @@ export const ResourceVaultDrawer: React.FC<ResourceVaultDrawerProps> = ({
       }
       return true;
     });
-  }, [activeFilter, searchQuery]);
+  }, [activeFilter, activeStageId, searchQuery]);
 
   if (!isOpen) return null;
 
@@ -131,6 +147,28 @@ export const ResourceVaultDrawer: React.FC<ResourceVaultDrawerProps> = ({
             {activeFilter === 'starter' ? 'Showing Starters ✓' : 'Filter Starters ⭐'}
           </button>
         </div>
+
+        {/* Active Stage Filter Indicator */}
+        {activeStageId && (
+          <div className="px-6 py-2.5 bg-indigo-50/90 border-b border-indigo-200/80 flex items-center justify-between text-xs shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-indigo-900">Stage Filter:</span>
+              <span className="font-bold text-indigo-700 bg-white px-2.5 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
+                {activeStageId}
+              </span>
+              <span className="text-slate-500">({filteredList.length} resources)</span>
+            </div>
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setActiveStageId(undefined);
+              }}
+              className="font-bold text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
+            >
+              Show All Resources ✕
+            </button>
+          </div>
+        )}
 
         {/* Search & Filter Bar */}
         <div className="p-4 bg-slate-50 border-b border-slate-200/80 flex flex-col gap-3 shrink-0">

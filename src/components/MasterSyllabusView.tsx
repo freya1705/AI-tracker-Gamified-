@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { SyllabusTopic, SyllabusModule, SwePillar } from '../types';
 import { MASTER_AI_MODULES, MASTER_SWE_PILLARS, ALL_SYLLABUS_TOPICS, TOTAL_AI_MIN_WEEKS } from '../data/syllabusData';
+import { getResourcesForStage, getBestResourceForTopic, FreeResourceItem } from '../data/resourceData';
 import { sounds } from '../utils/audio';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, Circle, Search, Sparkles, Brain, Cpu, 
   BookOpen, Target, ChevronDown, ChevronUp, Shuffle, ArrowRight, 
-  Layers, Flame, Zap, Award, Filter, ShieldCheck, Compass, Clock, Calendar, AlertCircle
+  Layers, Flame, Zap, Award, Filter, ShieldCheck, Compass, Clock, Calendar, AlertCircle, ExternalLink
 } from 'lucide-react';
 
 interface MasterSyllabusViewProps {
@@ -14,7 +15,7 @@ interface MasterSyllabusViewProps {
   onToggleTopic: (topicId: string, topicTitle: string, isChecked: boolean) => void;
   onLoadTopicIntoDaily: (topic: SyllabusTopic) => void;
   characterName: string;
-  onOpenResources?: () => void;
+  onOpenResources?: (stageId?: string) => void;
 }
 
 export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
@@ -480,7 +481,7 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
                 {/* Module Topics List */}
                 {isExpanded && (
                   <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 bg-slate-50/40 space-y-3">
-                    {/* Stage Note Banner if any (e.g. Multimodal podcast tools note) */}
+                    {/* Stage Note Banner if any */}
                     {module.stageNote && (
                       <div className="mt-3 p-3 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-start gap-2.5">
                         <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -490,9 +491,59 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
                       </div>
                     )}
 
+                    {/* Stage-Level Mapped Free Resources Bar */}
+                    {(() => {
+                      const stageResources = getResourcesForStage(module.id);
+                      if (stageResources.length === 0) return null;
+                      return (
+                        <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-indigo-50/95 via-purple-50/90 to-amber-50/70 border border-indigo-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[11px] font-black uppercase text-indigo-950 flex items-center gap-1.5 shrink-0">
+                              <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>Stage Free Resources:</span>
+                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {stageResources.map((res) => (
+                                <a
+                                  key={res.id}
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sounds.playClick();
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200/80 shadow-2xs transition-all cursor-pointer group active:scale-95"
+                                  title={`${res.name} — ${res.whyUseIt}`}
+                                >
+                                  <span>{res.name}</span>
+                                  <ExternalLink className="w-2.5 h-2.5 text-indigo-400 group-hover:text-white" />
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+
+                          {onOpenResources && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                sounds.playClick();
+                                onOpenResources(module.id);
+                              }}
+                              className="text-[10px] font-black text-purple-800 hover:text-purple-950 bg-white/90 hover:bg-white px-2.5 py-1 rounded-lg border border-purple-200 transition-all shrink-0 cursor-pointer shadow-2xs self-start sm:self-center"
+                            >
+                              Open in Vault 📚
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {visibleTopics.map((topic) => {
                         const isDone = completedSet.has(topic.id);
+                        const topicResource = getBestResourceForTopic(topic.title, module.id);
+
                         return (
                           <div
                             key={topic.id}
@@ -533,11 +584,32 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
                               </div>
                             </div>
 
-                            {/* Action Button: Load as Today's Focus */}
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-100/80">
-                              <span className="text-[10px] text-purple-700 font-bold">
-                                {isDone ? 'Mastered (+25 XP)' : '+25 XP upon mastery'}
-                              </span>
+                            {/* Footer: XP + Mapped Resource + Set as Daily Focus */}
+                            <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-100/80">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] text-purple-700 font-bold">
+                                  {isDone ? 'Mastered (+25 XP)' : '+25 XP'}
+                                </span>
+
+                                {/* Mapped Free Resource Chip */}
+                                {topicResource && (
+                                  <a
+                                    href={topicResource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      sounds.playClick();
+                                    }}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 transition-colors shadow-2xs group cursor-pointer"
+                                    title={`Free Resource: ${topicResource.name}\nWhy: ${topicResource.whyUseIt}`}
+                                  >
+                                    <span className="text-amber-600 font-black">📖</span>
+                                    <span className="max-w-[130px] truncate">{topicResource.name}</span>
+                                    <ExternalLink className="w-2.5 h-2.5 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+                                  </a>
+                                )}
+                              </div>
 
                               <button
                                 onClick={() => onLoadTopicIntoDaily(topic)}
@@ -627,67 +699,140 @@ export const MasterSyllabusView: React.FC<MasterSyllabusViewProps> = ({
 
                 {/* Pillar Topics List */}
                 {isExpanded && (
-                  <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-2.5 bg-slate-50/40">
-                    {visibleTopics.map((topic) => {
-                      const isDone = completedSet.has(topic.id);
+                  <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 bg-slate-50/40 space-y-3">
+                    {/* Pillar-Level Mapped Free Resources Bar */}
+                    {(() => {
+                      const pillarResources = getResourcesForStage(pillar.id);
+                      if (pillarResources.length === 0) return null;
                       return (
-                        <div
-                          key={topic.id}
-                          className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 ${
-                            isDone 
-                              ? 'bg-blue-50/60 border-blue-200 text-slate-900' 
-                              : 'bg-white border-slate-200/90 hover:border-blue-300'
-                          }`}
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <button
-                              onClick={() => {
-                                sounds.playTaskComplete();
-                                if (!isDone) {
-                                  confetti({ particleCount: 40, spread: 60 });
-                                }
-                                onToggleTopic(topic.id, topic.title, !isDone);
-                              }}
-                              className="mt-0.5 shrink-0 cursor-pointer text-slate-300 hover:text-blue-600 transition-colors"
-                            >
-                              {isDone ? (
-                                <CheckCircle2 className="w-5 h-5 text-blue-600 fill-blue-100" />
-                              ) : (
-                                <Circle className="w-5 h-5 text-slate-300" />
-                              )}
-                            </button>
-
-                            <div className="flex-1">
-                              <span className={`text-xs font-bold block mb-1 ${isDone ? 'line-through opacity-70 text-slate-700' : 'text-slate-900'}`}>
-                                {topic.title}
-                              </span>
-
-                              {topic.whyItMatters && (
-                                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                                  {topic.whyItMatters}
-                                </p>
-                              )}
+                        <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-blue-50/95 via-indigo-50/90 to-cyan-50/70 border border-blue-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[11px] font-black uppercase text-blue-950 flex items-center gap-1.5 shrink-0">
+                              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                              <span>Pillar Free Resources:</span>
+                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {pillarResources.map((res) => (
+                                <a
+                                  key={res.id}
+                                  href={res.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sounds.playClick();
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-white hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200/80 shadow-2xs transition-all cursor-pointer group active:scale-95"
+                                  title={`${res.name} — ${res.whyUseIt}`}
+                                >
+                                  <span>{res.name}</span>
+                                  <ExternalLink className="w-2.5 h-2.5 text-blue-400 group-hover:text-white" />
+                                </a>
+                              ))}
                             </div>
                           </div>
 
-                          {/* Action Button: Load into Daily DSA Stack */}
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-100/80">
-                            <span className="text-[10px] text-blue-700 font-bold">
-                              {isDone ? 'Mastered (+25 XP)' : '+25 XP upon mastery'}
-                            </span>
-
+                          {onOpenResources && (
                             <button
-                              onClick={() => onLoadTopicIntoDaily(topic)}
-                              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-blue-100 hover:bg-blue-200 text-blue-900 transition-all cursor-pointer active:scale-95"
-                              title="Set this as today's Core Engineering DSA / SWE topic"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                sounds.playClick();
+                                onOpenResources(pillar.id);
+                              }}
+                              className="text-[10px] font-black text-blue-800 hover:text-blue-950 bg-white/90 hover:bg-white px-2.5 py-1 rounded-lg border border-blue-200 transition-all shrink-0 cursor-pointer shadow-2xs self-start sm:self-center"
                             >
-                              <Zap className="w-3 h-3 text-blue-700" />
-                              <span>Set as Daily Topic ⚡</span>
+                              Open in Vault 📚
                             </button>
-                          </div>
+                          )}
                         </div>
                       );
-                    })}
+                    })()}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                      {visibleTopics.map((topic) => {
+                        const isDone = completedSet.has(topic.id);
+                        const topicResource = getBestResourceForTopic(topic.title, pillar.id);
+
+                        return (
+                          <div
+                            key={topic.id}
+                            className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 ${
+                              isDone 
+                                ? 'bg-blue-50/60 border-blue-200 text-slate-900' 
+                                : 'bg-white border-slate-200/90 hover:border-blue-300'
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <button
+                                onClick={() => {
+                                  sounds.playTaskComplete();
+                                  if (!isDone) {
+                                    confetti({ particleCount: 40, spread: 60 });
+                                  }
+                                  onToggleTopic(topic.id, topic.title, !isDone);
+                                }}
+                                className="mt-0.5 shrink-0 cursor-pointer text-slate-300 hover:text-blue-600 transition-colors"
+                              >
+                                {isDone ? (
+                                  <CheckCircle2 className="w-5 h-5 text-blue-600 fill-blue-100" />
+                                ) : (
+                                  <Circle className="w-5 h-5 text-slate-300" />
+                                )}
+                              </button>
+
+                              <div className="flex-1">
+                                <span className={`text-xs font-bold block mb-1 ${isDone ? 'line-through opacity-70 text-slate-700' : 'text-slate-900'}`}>
+                                  {topic.title}
+                                </span>
+
+                                {topic.whyItMatters && (
+                                  <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                                    {topic.whyItMatters}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Footer: XP + Mapped Resource + Set as Daily Topic */}
+                            <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-100/80">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] text-blue-700 font-bold">
+                                  {isDone ? 'Mastered (+25 XP)' : '+25 XP'}
+                                </span>
+
+                                {/* Mapped Free Resource Chip */}
+                                {topicResource && (
+                                  <a
+                                    href={topicResource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      sounds.playClick();
+                                    }}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-300/80 transition-colors shadow-2xs group cursor-pointer"
+                                    title={`Free Resource: ${topicResource.name}\nWhy: ${topicResource.whyUseIt}`}
+                                  >
+                                    <span className="text-cyan-600 font-black">📖</span>
+                                    <span className="max-w-[130px] truncate">{topicResource.name}</span>
+                                    <ExternalLink className="w-2.5 h-2.5 text-cyan-600 group-hover:translate-x-0.5 transition-transform" />
+                                  </a>
+                                )}
+                              </div>
+
+                              <button
+                                onClick={() => onLoadTopicIntoDaily(topic)}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-blue-100 hover:bg-blue-200 text-blue-900 transition-all cursor-pointer active:scale-95"
+                                title="Set this as today's Core Engineering DSA / SWE topic"
+                              >
+                                <Zap className="w-3 h-3 text-blue-700" />
+                                <span>Set as Daily Topic ⚡</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

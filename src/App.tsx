@@ -151,6 +151,7 @@ export const App: React.FC = () => {
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isResourceDrawerOpen, setIsResourceDrawerOpen] = useState(false);
   const [resourceDrawerFilter, setResourceDrawerFilter] = useState('all');
+  const [selectedStageForVault, setSelectedStageForVault] = useState<string | undefined>(undefined);
 
   // Persistence
   useEffect(() => {
@@ -516,6 +517,7 @@ export const App: React.FC = () => {
             <button
               onClick={() => {
                 sounds.playClick();
+                setSelectedStageForVault(undefined);
                 setResourceDrawerFilter('all');
                 setIsResourceDrawerOpen(true);
               }}
@@ -720,6 +722,12 @@ export const App: React.FC = () => {
                 setSyllabusPickerMode(mode);
                 setIsSyllabusPickerOpen(true);
               }}
+              onOpenResources={(stageId) => {
+                sounds.playClick();
+                setSelectedStageForVault(stageId);
+                setResourceDrawerFilter('all');
+                setIsResourceDrawerOpen(true);
+              }}
             />
           </>
         )}
@@ -733,7 +741,9 @@ export const App: React.FC = () => {
             onToggleTopic={handleToggleSyllabusTopic}
             onLoadTopicIntoDaily={handleLoadSyllabusTopicIntoDaily}
             characterName={stats.characterName}
-            onOpenResources={() => {
+            onOpenResources={(stageId) => {
+              sounds.playClick();
+              setSelectedStageForVault(stageId);
               setResourceDrawerFilter('all');
               setIsResourceDrawerOpen(true);
             }}
@@ -976,6 +986,7 @@ export const App: React.FC = () => {
       <button
         onClick={() => {
           sounds.playClick();
+          setSelectedStageForVault(undefined);
           setResourceDrawerFilter('all');
           setIsResourceDrawerOpen(true);
         }}
@@ -992,8 +1003,12 @@ export const App: React.FC = () => {
       {/* Free Resource Vault Side Drawer */}
       <ResourceVaultDrawer
         isOpen={isResourceDrawerOpen}
-        onClose={() => setIsResourceDrawerOpen(false)}
+        onClose={() => {
+          setIsResourceDrawerOpen(false);
+          setSelectedStageForVault(undefined);
+        }}
         initialFilter={resourceDrawerFilter}
+        selectedStageId={selectedStageForVault}
       />
 
     </div>

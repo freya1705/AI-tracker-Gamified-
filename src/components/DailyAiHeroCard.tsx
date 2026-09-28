@@ -1,14 +1,16 @@
 import React from 'react';
 import { DailyAiHeroMission } from '../types';
 import { sounds } from '../utils/audio';
+import { getBestResourceForTopic } from '../data/resourceData';
 import confetti from 'canvas-confetti';
-import { Crown, CheckCircle2, Circle, Sparkles } from 'lucide-react';
+import { Crown, CheckCircle2, Circle, Sparkles, ExternalLink, BookOpen } from 'lucide-react';
 
 interface DailyAiHeroCardProps {
   mission?: DailyAiHeroMission;
   onUpdateMission: (updater: (prev: DailyAiHeroMission) => DailyAiHeroMission) => void;
   onTriggerReaction: (speech: string, mood: any, earnedXP?: number) => void;
   onOpenTopicPicker?: (mode: 'ai' | 'swe') => void;
+  onOpenResources?: (stageId?: string) => void;
 }
 
 export const DailyAiHeroCard: React.FC<DailyAiHeroCardProps> = ({
@@ -16,6 +18,7 @@ export const DailyAiHeroCard: React.FC<DailyAiHeroCardProps> = ({
   onUpdateMission,
   onTriggerReaction,
   onOpenTopicPicker,
+  onOpenResources,
 }) => {
   const completedMissions = mission?.completedMissions || {
     learn: false,
@@ -55,6 +58,10 @@ export const DailyAiHeroCard: React.FC<DailyAiHeroCardProps> = ({
       onTriggerReaction("Shipped & committed to GitHub! Proof is in the commits. 🚀", 'proud', 50);
     }
   };
+
+  const bestResource = mission?.concept 
+    ? getBestResourceForTopic(mission.concept, 'ai-stage-1')
+    : null;
 
   return (
     <div className="bg-gradient-to-b from-purple-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-xl border border-purple-500/40">
@@ -110,6 +117,46 @@ export const DailyAiHeroCard: React.FC<DailyAiHeroCardProps> = ({
           )}
         </div>
       </div>
+
+      {/* Mapped Free Resource for Today's Concept */}
+      {bestResource && (
+        <div className="mb-4 -mt-2 p-3 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-inner">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 animate-pulse" />
+            <span className="text-[11px] font-black text-amber-300 uppercase tracking-wide shrink-0">
+              📖 Study Resource:
+            </span>
+            <span className="text-white font-semibold text-xs truncate" title={bestResource.name}>
+              {bestResource.name}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <a
+              href={bestResource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs hover:from-amber-300 hover:to-amber-400 transition-all shadow-md active:scale-95 cursor-pointer"
+              title={`Open ${bestResource.name} in a new tab`}
+            >
+              <span>Open Link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            {onOpenResources && bestResource.stageIds?.[0] && (
+              <button
+                type="button"
+                onClick={() => onOpenResources(bestResource.stageIds[0])}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-700/60 hover:bg-purple-600 text-purple-200 text-[11px] font-bold transition-colors cursor-pointer border border-purple-500/40 active:scale-95"
+                title="View mapped stage in Resource Vault"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-purple-300" />
+                <span>Vault 📚</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Missions A-F */}
       <div className="space-y-2 mb-4">

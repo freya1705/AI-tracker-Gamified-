@@ -1,10 +1,11 @@
 import React from 'react';
 import { MasterDailyState } from '../types';
 import { LIFE_ROTATION_OPTIONS } from '../data/initialData';
+import { getBestResourceForTopic } from '../data/resourceData';
 import { DailyAiHeroCard } from './DailyAiHeroCard';
 import { sounds } from '../utils/audio';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Circle, Moon } from 'lucide-react';
+import { CheckCircle2, Circle, Moon, ExternalLink, BookOpen } from 'lucide-react';
 
 interface MasterDailyViewProps {
   daily: MasterDailyState;
@@ -12,6 +13,7 @@ interface MasterDailyViewProps {
   onTriggerReaction: (speech: string, mood: any, earnedXP?: number) => void;
   characterName: string;
   onOpenTopicPicker?: (mode: 'ai' | 'swe') => void;
+  onOpenResources?: (stageId?: string) => void;
 }
 
 export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
@@ -20,6 +22,7 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
   onTriggerReaction,
   characterName,
   onOpenTopicPicker,
+  onOpenResources,
 }) => {
   const morning = daily?.morning || {
     darshanAarti: false,
@@ -112,6 +115,7 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
     { key: 'commitCode', label: 'Commit Code' },
   ] as const;
   const dsaDoneCount = dsaChecklistItems.filter(i => (dsa as any)[i.key]).length;
+  const dsaResource = dsa.topic ? getBestResourceForTopic(dsa.topic, 'swe-dsa') : null;
 
   const projectChecklistItems = [
     { key: 'implement', label: 'Implement Feature' },
@@ -402,6 +406,46 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
           <span>Formula: <strong>Topic → Concept → Lecture → Book → Notes → LC 1 → LC 2 → LC 3 → LC 4 → Commit</strong></span>
           <span className="font-extrabold">{dsaDoneCount}/10 Done</span>
         </div>
+
+        {/* Mapped Free Resource for Today's DSA Topic */}
+        {dsaResource && (
+          <div className="mt-2.5 p-2.5 px-3 rounded-2xl bg-blue-100/60 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-950">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+              <span className="text-[11px] font-black text-blue-800 uppercase tracking-wide shrink-0">
+                📖 Study Resource:
+              </span>
+              <span className="font-semibold text-xs truncate" title={dsaResource.name}>
+                {dsaResource.name}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+              <a
+                href={dsaResource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-extrabold text-blue-700 hover:text-blue-900 bg-white px-2.5 py-1 rounded-xl border border-blue-200 shrink-0 shadow-xs hover:bg-blue-50 transition-colors"
+                title={`Open ${dsaResource.name} in a new tab`}
+              >
+                <span>Open Link</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              {onOpenResources && dsaResource.stageIds?.[0] && (
+                <button
+                  type="button"
+                  onClick={() => onOpenResources(dsaResource.stageIds[0])}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-blue-200/70 hover:bg-blue-200 text-blue-800 text-[10px] font-bold transition-colors cursor-pointer"
+                  title="View in Resource Vault"
+                >
+                  <BookOpen className="w-3 h-3 text-blue-700" />
+                  <span>Vault</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 🤖 3. THE DAILY AI HERO CARD (MISSIONS A-F) */}
@@ -410,6 +454,7 @@ export const MasterDailyView: React.FC<MasterDailyViewProps> = ({
         onUpdateMission={(updater) => onUpdateDaily(prev => ({ ...prev, aiMission: updater(prev.aiMission || aiMission) }))}
         onTriggerReaction={onTriggerReaction}
         onOpenTopicPicker={onOpenTopicPicker}
+        onOpenResources={onOpenResources}
       />
 
       {/* 💻 4. BUILD + PROJECT MILESTONE */}

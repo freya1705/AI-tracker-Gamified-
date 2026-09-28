@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SyllabusTopic } from '../types';
 import { MASTER_AI_MODULES, MASTER_SWE_PILLARS, ALL_SYLLABUS_TOPICS } from '../data/syllabusData';
+import { getBestResourceForTopic } from '../data/resourceData';
 import { sounds } from '../utils/audio';
 import { X, Search, Sparkles, Target, Zap, Brain } from 'lucide-react';
 
@@ -115,32 +116,39 @@ export const SyllabusTopicPickerModal: React.FC<SyllabusTopicPickerModalProps> =
               No matching topics found for "{searchQuery}".
             </div>
           ) : (
-            filteredTopics.map((topic) => (
-              <div
-                key={topic.id}
-                onClick={() => {
-                  sounds.playLevelUp();
-                  onSelectTopic(topic);
-                  onClose();
-                }}
-                className="pt-2 pb-2 px-3 rounded-2xl hover:bg-indigo-50/70 border border-transparent hover:border-indigo-200 transition-all cursor-pointer flex items-center justify-between gap-3 group"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${
-                      topic.category === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {topic.moduleName}
-                    </span>
-                    {topic.subgroup && (
-                      <span className="text-[9px] font-bold text-slate-500">
-                        • {topic.subgroup}
+            filteredTopics.map((topic) => {
+              const mappedRes = getBestResourceForTopic(topic.title);
+              return (
+                <div
+                  key={topic.id}
+                  onClick={() => {
+                    sounds.playLevelUp();
+                    onSelectTopic(topic);
+                    onClose();
+                  }}
+                  className="pt-2 pb-2 px-3 rounded-2xl hover:bg-indigo-50/70 border border-transparent hover:border-indigo-200 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${
+                        topic.category === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {topic.moduleName}
                       </span>
-                    )}
-                  </div>
-                  <h4 className="text-xs font-bold text-slate-800 mt-0.5 group-hover:text-indigo-900 transition-colors">
-                    {topic.title}
-                  </h4>
+                      {topic.subgroup && (
+                        <span className="text-[9px] font-bold text-slate-500">
+                          • {topic.subgroup}
+                        </span>
+                      )}
+                      {mappedRes && (
+                        <span className="text-[9px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/80 truncate max-w-[220px]" title={mappedRes.name}>
+                          📖 {mappedRes.name}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-800 mt-0.5 group-hover:text-indigo-900 transition-colors">
+                      {topic.title}
+                    </h4>
                   {topic.whyItMatters && (
                     <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
                       {topic.whyItMatters}
@@ -154,8 +162,8 @@ export const SyllabusTopicPickerModal: React.FC<SyllabusTopicPickerModalProps> =
                   Select 🎯
                 </button>
               </div>
-            ))
-          )}
+            );
+          }))}
         </div>
 
       </div>
