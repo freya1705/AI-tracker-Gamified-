@@ -294,6 +294,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v16-13', text: 'LLM APIs' },
       { id: 'v16-14', text: 'Cost' },
       { id: 'v16-15', text: 'Latency' },
+      { id: 'v16-16', text: 'Top-K / Top-P sampling parameters' },
     ],
   },
   {
@@ -310,6 +311,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v17-8', text: 'Error handling' },
       { id: 'v17-9', text: 'Retries' },
       { id: 'v17-10', text: 'LLM evaluation' },
+      { id: 'v17-11', text: 'Context engineering vs prompt engineering' },
     ],
   },
   {
@@ -328,6 +330,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v18-10', text: 'Retrieval errors' },
       { id: 'v18-11', text: 'Generation errors' },
       { id: 'v18-12', text: 'RAG evaluation' },
+      { id: 'v18-13', text: 'Vector DBs: Chroma, Qdrant, Pinecone, LanceDB, Supabase' },
     ],
   },
   {
@@ -347,6 +350,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v19-11', text: 'Guardrails' },
       { id: 'v19-12', text: 'Failure handling' },
       { id: 'v19-13', text: 'When not to use agents' },
+      { id: 'v19-14', text: 'Stateful Agent Graphs (LangGraph & n8n)' },
     ],
   },
   {
@@ -419,6 +423,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v23-12', text: 'Cloud basics' },
       { id: 'v23-13', text: 'Environment variables' },
       { id: 'v23-14', text: 'Secrets management' },
+      { id: 'v23-15', text: 'MLflow experiment tracking & model registry' },
     ],
   },
   {
@@ -459,6 +464,7 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v25-13', text: 'RAG evaluation' },
       { id: 'v25-14', text: 'Agent evaluation' },
       { id: 'v25-15', text: 'Safety testing' },
+      { id: 'v25-16', text: 'Golden evaluation datasets & LangSmith tracing' },
     ],
   },
   {
@@ -493,6 +499,8 @@ export const VERBATIM_CHECKLIST_SECTIONS: VerbatimChecklistSection[] = [
       { id: 'v27-8', text: 'Local models' },
       { id: 'v27-9', text: 'Ollama' },
       { id: 'v27-10', text: 'Hugging Face ecosystem' },
+      { id: 'v27-11', text: 'Model Context Protocol (MCP)' },
+      { id: 'v27-12', text: 'LM Studio & Transformers.js' },
     ],
   },
   {
