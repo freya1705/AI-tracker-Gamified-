@@ -30,6 +30,7 @@ import { ProblemOfTheWeekModal } from './components/ProblemOfTheWeekModal';
 import { RoutinePhotoModal } from './components/RoutinePhotoModal';
 import { ResourceVaultDrawer } from './components/ResourceVaultDrawer';
 import { MasterChecklistDrawer } from './components/MasterChecklistDrawer';
+import { PlacementRoadmapDrawer } from './components/PlacementRoadmapDrawer';
 import { TOTAL_VERBATIM_ITEMS } from './data/verbatimChecklistData';
 import { sounds } from './utils/audio';
 import confetti from 'canvas-confetti';
@@ -37,7 +38,7 @@ import {
   Plus, Search, Compass, Lightbulb, FileText, 
   Sparkles, CheckCircle2, Clock, Filter, BookOpen, 
   Flame, Award, Layers, Zap, Heart, Trophy, LayoutDashboard, ListTodo, Calendar, Crown, RotateCcw,
-  CheckSquare, Brain
+  CheckSquare, Brain, Target
 } from 'lucide-react';
 
 const STORAGE_KEY_TASKS = 'freya_quest_tasks_v3';
@@ -207,6 +208,7 @@ export const App: React.FC = () => {
   const [resourceDrawerFilter, setResourceDrawerFilter] = useState('all');
   const [selectedStageForVault, setSelectedStageForVault] = useState<string | undefined>(undefined);
   const [isChecklistDrawerOpen, setIsChecklistDrawerOpen] = useState(false);
+  const [isPlacementDrawerOpen, setIsPlacementDrawerOpen] = useState(false);
   const [verbatimCheckedIds, setVerbatimCheckedIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_VERBATIM_CHECKLIST);
@@ -608,6 +610,7 @@ export const App: React.FC = () => {
         }}
         onOpenSearch={() => setIsCommandPaletteOpen(true)}
         onOpenSatchel={() => setIsQuickAccessOpen(true)}
+        onOpenPlacementDrawer={() => setIsPlacementDrawerOpen(true)}
         stats={stats}
       />
 
@@ -725,6 +728,7 @@ export const App: React.FC = () => {
               sounds.playClick();
               setIsRoadmapOpen(true);
             }}
+            onOpenPlacementDrawer={() => setIsPlacementDrawerOpen(true)}
           />
         )}
 
@@ -856,6 +860,7 @@ export const App: React.FC = () => {
         }}
         totalVerbatimChecked={verbatimCheckedIds.length}
         totalVerbatimCount={TOTAL_VERBATIM_ITEMS}
+        onOpenPlacementRoadmap={() => setIsPlacementDrawerOpen(true)}
       />
 
       {/* Global Command Palette (Ctrl+K) */}
@@ -871,6 +876,7 @@ export const App: React.FC = () => {
         }}
         onOpenFounderRoadmap={() => setIsFounderRoadmapOpen(true)}
         onOpenRoadmap={() => setIsRoadmapOpen(true)}
+        onOpenPlacementRoadmap={() => setIsPlacementDrawerOpen(true)}
         onOpenProblemSheet={() => setIsProblemOpen(true)}
         onOpenOriginalNote={() => setIsPhotoOpen(true)}
         onOpenTimer={() => setIsTimerOpen(true)}
@@ -1122,6 +1128,21 @@ export const App: React.FC = () => {
           </span>
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
         </button>
+        {/* 3. 36-Week Placement Roadmap Button */}
+        <button
+          onClick={() => {
+            sounds.playClick();
+            setIsPlacementDrawerOpen(true);
+          }}
+          className="bg-gradient-to-b from-amber-500 via-orange-600 to-amber-800 text-slate-950 font-black text-xs py-3.5 px-2 rounded-l-2xl shadow-2xl hover:px-2.5 transition-all flex flex-col items-center gap-1.5 group cursor-pointer border-t border-b border-l border-amber-300/40 active:scale-95"
+          title="Open 36-Week Placement Roadmap & Weekly Engine Side Sheet"
+        >
+          <Target className="w-4 h-4 text-slate-950 group-hover:scale-110 transition-transform" />
+          <span className="[writing-mode:vertical-rl] tracking-wider text-[10px] font-black uppercase py-0.5">
+            36-Wk Plan
+          </span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 border border-slate-900 animate-pulse" />
+        </button>
       </div>
 
       {/* Master AI Checklist Side Drawer Sheet */}
@@ -1142,6 +1163,12 @@ export const App: React.FC = () => {
         }}
         initialFilter={resourceDrawerFilter}
         selectedStageId={selectedStageForVault}
+      />
+
+      {/* 36-Week Placement Roadmap Side Drawer */}
+      <PlacementRoadmapDrawer
+        isOpen={isPlacementDrawerOpen}
+        onClose={() => setIsPlacementDrawerOpen(false)}
       />
 
     </div>

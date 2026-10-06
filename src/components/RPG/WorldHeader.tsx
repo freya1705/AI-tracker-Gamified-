@@ -3,7 +3,7 @@ import { UserStats } from '../../types';
 import { sounds } from '../../utils/audio';
 import { 
   Sparkles, Search, Compass, Flame, Trophy, 
-  Map, BookOpen, ListTodo, Calendar, Backpack, Shield
+  Map, BookOpen, ListTodo, Calendar, Backpack, Shield, Target
 } from 'lucide-react';
 
 export type ActiveRealm = 'today' | 'master' | 'roadmap' | 'resources' | 'quests' | 'calendar';
@@ -13,6 +13,7 @@ interface WorldHeaderProps {
   onSelectRealm: (realm: ActiveRealm) => void;
   onOpenSearch: () => void;
   onOpenSatchel: () => void;
+  onOpenPlacementDrawer?: () => void;
   stats: UserStats;
 }
 
@@ -21,6 +22,7 @@ export const WorldHeader: React.FC<WorldHeaderProps> = ({
   onSelectRealm,
   onOpenSearch,
   onOpenSatchel,
+  onOpenPlacementDrawer,
   stats,
 }) => {
   const xpPercent = Math.min(100, Math.round((stats.currentXP / stats.nextLevelXP) * 100));
@@ -94,6 +96,21 @@ export const WorldHeader: React.FC<WorldHeaderProps> = ({
         {/* Right HUD: Player Level, Streak, Search, Satchel */}
         <div className="flex items-center gap-2 shrink-0">
           
+          {/* 36-Week Placement Drawer Button */}
+          {onOpenPlacementDrawer && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onOpenPlacementDrawer();
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-emerald-600/30 to-teal-600/30 hover:from-emerald-600/50 hover:to-teal-600/50 text-emerald-300 font-black text-xs rounded-xl border border-emerald-400/40 shadow-xs transition cursor-pointer active:scale-95"
+              title="Open 36-Week Placement Roadmap & Weekly Engine Sidebar"
+            >
+              <Target className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline text-[11px]">36-Wk Plan</span>
+            </button>
+          )}
+
           {/* Global World Search */}
           <button
             onClick={() => {

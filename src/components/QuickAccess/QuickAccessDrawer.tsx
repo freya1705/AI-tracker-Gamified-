@@ -2,7 +2,7 @@ import React from 'react';
 import { sounds } from '../../utils/audio';
 import { 
   X, CheckSquare, BookOpen, Lightbulb, FileText, 
-  Compass, Trophy, Calendar, Plus, RotateCcw, Clock, Sparkles, Volume2, VolumeX, ArrowRight
+  Compass, Trophy, Calendar, Plus, RotateCcw, Clock, Sparkles, Volume2, VolumeX, ArrowRight, Target
 } from 'lucide-react';
 
 interface QuickAccessDrawerProps {
@@ -21,6 +21,7 @@ interface QuickAccessDrawerProps {
   onOpenWardrobe: () => void;
   onRestartDailyRoutine?: () => void;
   onOpenAfterStudies?: () => void;
+  onOpenPlacementRoadmap?: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   totalVerbatimChecked: number;
@@ -43,6 +44,7 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
   onOpenWardrobe,
   onRestartDailyRoutine,
   onOpenAfterStudies,
+  onOpenPlacementRoadmap,
   soundEnabled,
   onToggleSound,
   totalVerbatimChecked,
@@ -101,6 +103,19 @@ export const QuickAccessDrawer: React.FC<QuickAccessDrawerProps> = ({
         sounds.playClick();
         onClose();
         onOpenResources();
+      },
+    },
+    {
+      id: 'placement-roadmap',
+      title: '36-Week Placement Engine',
+      badge: 'Job Ready 🎯',
+      desc: 'Structured 36-week plan with continuous DSA, Spring Boot, Linux, Docker, AWS, Distributed Systems & PatientTriage.ai.',
+      icon: <Target className="w-5 h-5 text-amber-600" />,
+      bg: 'bg-amber-50 hover:bg-amber-100/80 border-amber-200 text-amber-950',
+      action: () => {
+        sounds.playClick();
+        onClose();
+        if (onOpenPlacementRoadmap) onOpenPlacementRoadmap();
       },
     },
     {

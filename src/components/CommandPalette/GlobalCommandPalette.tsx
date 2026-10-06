@@ -24,6 +24,7 @@ interface GlobalCommandPaletteProps {
   onOpenResetConfirm: () => void;
   onRestartDailyRoutine?: () => void;
   onOpenAddTask: () => void;
+  onOpenPlacementRoadmap?: () => void;
   tasks: Task[];
 }
 
@@ -43,6 +44,7 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({
   onOpenResetConfirm,
   onRestartDailyRoutine,
   onOpenAddTask,
+  onOpenPlacementRoadmap,
   tasks,
 }) => {
   const [query, setQuery] = useState('');
@@ -113,6 +115,15 @@ export const GlobalCommandPalette: React.FC<GlobalCommandPaletteProps> = ({
       category: 'Roadmap',
       icon: <Trophy className="w-4 h-4 text-purple-600" />,
       action: onOpenFounderRoadmap,
+    },
+    {
+      id: 'act-placement',
+      title: "🎯 Open 36-Week Placement Roadmap & Weekly Engine",
+      category: 'Roadmap',
+      icon: <Target className="w-4 h-4 text-amber-500" />,
+      action: () => {
+        if (onOpenPlacementRoadmap) onOpenPlacementRoadmap();
+      },
     },
     {
       id: 'act-guide',
